@@ -12,13 +12,14 @@ This document details the architectural decisions, design patterns, and librarie
   - ViewModels (Zustand stores) decouple UI state from persistence.
   - Highly testable and cleanly explainable for university coursework evaluation.
 
-## 2. Local Database: `expo-sqlite`
-- **Decision:** Use official Expo module `expo-sqlite` with parameterized queries.
+## 2. Local Database: `expo-sqlite` (vs `sqflite`)
+- **Decision:** Use the official modern Expo module `expo-sqlite` (`openDatabaseAsync`) with parameterized queries and schema versioning via `PRAGMA user_version`.
 - **Justification:**
-  - Native embedded SQLite engine with zero cloud latency.
-  - Direct requirement for the coursework's embedded database criterion.
-  - Guaranteed SDK compatibility with standard Expo workflows.
-  - Parameterized queries eliminate SQL injection vulnerabilities.
+  - **Framework Ecosystem Compatibility:** The coursework specification mentions `sqflite`, which is a Flutter/Dart-exclusive package from pub.dev. In a React Native / Expo mobile application, `expo-sqlite` is the official, actively maintained equivalent providing embedded SQLite capabilities.
+  - **Zero Latency & Offline-First:** SQLite runs directly on device storage, ensuring instantaneous CRUD execution without network requirements.
+  - **Prepared Statements & Security:** All queries use parameterized inputs (`?` placeholders) to prevent SQL injection vulnerabilities.
+  - **Schema Versioning (`PRAGMA user_version`):** Ensures tables (`health_records`, `settings`) and indexes (`idx_health_records_date`) are migrated safely without table loss on subsequent app launches.
+  - **Awaited Initialization:** Database setup runs once at application bootstrap in `app/_layout.js` before exposing UI routes, guaranteeing no race conditions during initial queries.
 
 ## 3. State Management: `Zustand`
 - **Decision:** Use `zustand` for lightweight, store-based state management.
@@ -68,3 +69,9 @@ This document details the architectural decisions, design patterns, and librarie
     - **Steps (Soft Green `#4CAF7D`):** Evokes nature, vitality, and steady physical progression.
     - **Active Calories (Soft Coral Red `#E76F6F`):** Associates naturally with metabolic warmth and expended energy without visual alarm.
     - **Water (Soft Blue `#4A90D9`):** Direct psychological association with hydration and refreshment.
+
+## 10. Timezone-Safe Local Calendar Date Management
+- **Decision:** Handle all dates strictly as local calendar dates in `YYYY-MM-DD` format using dedicated pure functions (`toISODate`, `parseISODate`, `isValidISODate`), deliberately avoiding native `Date.toISOString()`.
+- **Justification:**
+  - **Preventing Off-By-One Day Shifts:** Standard JavaScript `Date.toISOString()` forces timestamps into UTC (`Z`). In local timezones ahead of UTC (e.g. BST `UTC+1` or IST `UTC+5:30`), a record logged at local midnight shifts to 23:00 or 18:30 on the preceding calendar day, corrupting historical logs and daily sum calculations.
+  - **Local Parsing Consistency:** Parsing `YYYY-MM-DD` with `new Date("YYYY-MM-DD")` is treated by ECMAScript as UTC midnight, causing the same shifting bug when formatted in local time. HealthMate's `parseISODate` splits `[year, month, day]` and feeds numeric components to `new Date(year, month - 1, day)`, guaranteeing that the date stays pegged to the user's local calendar day across all regions and daylight saving adjustments.

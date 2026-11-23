@@ -36,3 +36,9 @@ This log records every error, issue, or unexpected behavior encountered during d
 - **Root Cause:** A momentary drop in internet connectivity or temporary DNS resolution failure on the client machine when Git attempted to query GitHub.
 - **Fix:** Tested and confirmed DNS resolution to `github.com` (IP: `20.247.166.64`) and verified remote connection with `git ls-remote`. Network connectivity is restored.
 - **Prevention:** For transient DNS interruptions, verify network connection or flush DNS cache with `ipconfig /flushdns` before re-syncing.
+
+### [2026-11-23] Expo SQLite Web Worker WASM Resolution
+- **Symptom:** Metro bundler failed during web export with `Unable to resolve "./wa-sqlite/wa-sqlite.wasm" from "node_modules/expo-sqlite/web/worker.ts"`.
+- **Root Cause:** Metro's default asset configuration does not include `.wasm` files in `resolver.assetExts`, preventing `expo-sqlite`'s web worker from resolving its WebAssembly database binary.
+- **Fix:** Created `metro.config.js` appending `'wasm'` to `config.resolver.assetExts`.
+- **Prevention:** Always include wasm asset extension support in Metro when using `expo-sqlite` with multi-platform / web capabilities.
