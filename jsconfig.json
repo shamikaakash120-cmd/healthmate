@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "jsx": "react-native",
+    "moduleResolution": "node",
+    "target": "es2020",
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "."
+  },
+  "exclude": [
+    "node_modules",
+    ".expo"
+  ]
+}
