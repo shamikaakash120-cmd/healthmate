@@ -58,3 +58,13 @@ This document details the architectural decisions, design patterns, and librarie
 - **Justification:**
   - Avoids bloated third-party charting packages.
   - High performance, pixel-crisp rendering on all screen densities.
+
+## 9. Color Psychology & Low-Stress Emotional Design
+- **Decision:** Ground the visual design in calming teal (`#2A9D8F`), warm off-white (`#F7F5F0`), deep slate text (`#1F2D3D`), and gentle pastel tints for metric containers.
+- **Justification:**
+  - **Teal as Primary:** Color psychology links teal with emotional balance, clarity, and rejuvenation. It avoids the clinical sterility of pure hospital blues and the agitation of high-energy neon colors.
+  - **Soft Hues for Low Stress:** Traditional fitness apps often use aggressive neon alerts and harsh crimson red for missed goals, inducing guilt and anxiety. HealthMate utilizes soft warm tints (`#EDF7F1`, `#FDF1F1`, `#EDF4FC`) and gentle coral/terracotta for validation and calorie metrics, fostering positive reinforcement and long-term user retention.
+  - **Intuitive Cognitive Mapping:**
+    - **Steps (Soft Green `#4CAF7D`):** Evokes nature, vitality, and steady physical progression.
+    - **Active Calories (Soft Coral Red `#E76F6F`):** Associates naturally with metabolic warmth and expended energy without visual alarm.
+    - **Water (Soft Blue `#4A90D9`):** Direct psychological association with hydration and refreshment.

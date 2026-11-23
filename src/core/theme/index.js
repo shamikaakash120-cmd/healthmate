@@ -1,37 +1,76 @@
 /**
  * @layer Core (Theme)
- * @responsibility Design tokens, palette constants, typography, and spacing scales.
+ * @responsibility Unified design system exports and reactive useTheme hook.
  */
+import { useColorScheme } from 'react-native';
+import { create } from 'zustand';
+import { darkColors, lightColors } from './colors';
+import { METRICS } from './metrics';
+import { SHADOWS, getShadow } from './shadows';
+import { RADIUS, SPACING } from './spacing';
+import { TYPOGRAPHY } from './typography';
 
-export const COLORS = {
-  background: '#F7F5F0',
-  surface: '#FFFFFF',
-  primary: '#2A9D8F',
-  textPrimary: '#1F2D3D',
-  textSecondary: '#6B7A8C',
-  error: '#D9534F',
-  steps: '#4CAF7D',
-  calories: '#E76F6F',
-  water: '#4A90D9',
-};
+// Re-export all individual modules for granular imports
+export * from './colors';
+export * from './metrics';
+export * from './shadows';
+export * from './spacing';
+export * from './typography';
 
-export const SPACING = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 40,
-};
-
-export const RADIUS = {
-  card: 20,
-};
+// Default static tokens export for static style definitions
+export const COLORS = lightColors;
 
 /**
- * Returns theme configuration tokens.
- * @returns {object} Application theme tokens.
+ * Zustand store managing user theme mode preference ('system' | 'light' | 'dark').
+ */
+export const useThemeStore = create((set) => ({
+  themeMode: 'system',
+  /**
+   * Updates theme mode override.
+   * @param {'system'|'light'|'dark'} mode New theme preference.
+   * @returns {void}
+   */
+  setThemeMode: (mode) => set({ themeMode: mode }),
+}));
+
+/**
+ * React hook providing the active theme tokens, responsive to system scheme and user override.
+ * @returns {{
+ *   isDark: boolean,
+ *   themeMode: 'system'|'light'|'dark',
+ *   setThemeMode: (mode: 'system'|'light'|'dark') => void,
+ *   colors: typeof lightColors,
+ *   typography: typeof TYPOGRAPHY,
+ *   spacing: typeof SPACING,
+ *   radius: typeof RADIUS,
+ *   shadow: typeof SHADOWS.soft,
+ *   metrics: typeof METRICS
+ * }} Active theme context and tokens.
+ */
+export function useTheme() {
+  const systemScheme = useColorScheme();
+  const themeMode = useThemeStore((state) => state.themeMode);
+  const setThemeMode = useThemeStore((state) => state.setThemeMode);
+
+  const isDark = themeMode === 'system' ? systemScheme === 'dark' : themeMode === 'dark';
+  const colors = isDark ? darkColors : lightColors;
+
+  return {
+    isDark,
+    themeMode,
+    setThemeMode,
+    colors,
+    typography: TYPOGRAPHY,
+    spacing: SPACING,
+    radius: RADIUS,
+    shadow: getShadow(isDark),
+    metrics: METRICS,
+  };
+}
+
+/**
+ * Returns static theme configuration tokens.
+ * @returns {object} Application theme tokens snapshot.
  */
 export function getThemeTokens() {
-  return { COLORS, SPACING, RADIUS };
 }
