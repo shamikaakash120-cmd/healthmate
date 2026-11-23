@@ -30,3 +30,9 @@ This log records every error, issue, or unexpected behavior encountered during d
 - **Root Cause:** When `create-expo-app` generated the project, default TypeScript template files (`src/app/index.tsx`, `tsconfig.json`) were opened in VS Code editor tabs. When boilerplate files were purged to implement the JavaScript MVVM architecture, the open editor tab in VS Code remained in-memory as an unsaved/stale buffer. The TypeScript language server in VS Code continued evaluating the in-memory `.tsx` buffer and searched for the deleted `tsconfig.json`. Neither file existed on disk.
 - **Fix:** Added `jsconfig.json` configuring VS Code explicitly for a JavaScript / React Native project, and instructed closing the stale, deleted `index.tsx` editor tab.
 - **Prevention:** After deleting or restructuring template files, close any open editor tabs in VS Code and reload the window (`Ctrl+Shift+P` -> `Developer: Reload Window`).
+
+### [2026-11-23] Git Network Failure: Could Not Resolve Host (github.com)
+- **Symptom:** VS Code Git output logged `fatal: unable to access 'https://github.com/shamikaakash120-cmd/healthmate.git/': Could not resolve host: github.com` during `git pull --tags origin main`.
+- **Root Cause:** A momentary drop in internet connectivity or temporary DNS resolution failure on the client machine when Git attempted to query GitHub.
+- **Fix:** Tested and confirmed DNS resolution to `github.com` (IP: `20.247.166.64`) and verified remote connection with `git ls-remote`. Network connectivity is restored.
+- **Prevention:** For transient DNS interruptions, verify network connection or flush DNS cache with `ipconfig /flushdns` before re-syncing.
