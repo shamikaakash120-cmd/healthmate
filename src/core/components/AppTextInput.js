@@ -21,6 +21,7 @@ import AppText from './AppText';
  * @param {Function} [props.onChangeText] Change handler.
  * @param {string} [props.placeholder] Placeholder text.
  * @param {string} [props.iconName] MaterialCommunityIcons name shown on the left.
+ * @param {string} [props.iconColor] Custom color for the icon.
  * @param {string} [props.unit] Unit suffix shown on the right (e.g. 'ml', 'kcal').
  * @param {string} [props.helperText] Hint text shown below input when no error.
  * @param {string} [props.error] Inline error message; replaces helperText when set.
@@ -28,6 +29,7 @@ import AppText from './AppText';
  * @param {boolean} [props.disabled=false] Prevents editing.
  * @param {string} props.accessibilityLabel Accessibility label for the input.
  * @param {object} [props.style] Additional outer container styles.
+ * @param {React.Ref} [props.inputRef] Ref attached to the underlying TextInput.
  * @returns {React.JSX.Element}
  */
 export default function AppTextInput({
@@ -36,6 +38,7 @@ export default function AppTextInput({
   onChangeText,
   placeholder,
   iconName,
+  iconColor,
   unit,
   helperText,
   error,
@@ -43,10 +46,13 @@ export default function AppTextInput({
   disabled = false,
   accessibilityLabel,
   style,
+  inputRef,
+  ref,
   ...rest
 }) {
   const { colors, spacing, radius, typography } = useTheme();
   const [focused, setFocused] = useState(false);
+  const actualRef = inputRef || ref;
 
   const hasError = !!error;
   const borderColor = hasError
@@ -86,7 +92,7 @@ export default function AppTextInput({
           <MaterialCommunityIcons
             name={iconName}
             size={20}
-            color={focused ? colors.primary : colors.textMuted}
+            color={iconColor || (focused ? colors.primary : colors.textMuted)}
             style={{ marginRight: spacing.xs }}
             accessibilityElementsHidden
             importantForAccessibility="no"
@@ -94,6 +100,7 @@ export default function AppTextInput({
         )}
 
         <TextInput
+          ref={actualRef}
           style={[
             styles.input,
             typography.body,
