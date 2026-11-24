@@ -2,17 +2,14 @@
  * @layer Core (Database)
  * @responsibility Seeds initial realistic health records if the database table is empty.
  */
-import { getDb } from './database';
 import { getLastNDates } from '../utils/dateUtils';
+import { getDb } from './database';
 
 /**
- * Seeds 11 realistic health records across the last 10 days,
- * including one day with two separate entries (morning & evening),
- * strictly only if the health_records table is currently empty.
- *
- * @param {boolean} [force=false] If true, bypasses the empty table check.
- * @returns {Promise<boolean>} True if records were seeded, false if table was already populated.
- * @throws {Error} If seeding database execution fails.
+ * Seeds 11 realistic health records across the last 10 days,including one day with two separate entries (morning & evening),
+ * @param {boolean} [force=false] 
+ * @returns {Promise<boolean>} 
+ * @throws {Error} 
  */
 export async function seedDatabase(force = false) {
   try {

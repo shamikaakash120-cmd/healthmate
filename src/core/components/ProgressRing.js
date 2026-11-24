@@ -1,7 +1,6 @@
 /**
  * @layer Core (Components)
  * @responsibility SVG circular progress ring with metric color fill,
- *                animated stroke, and centre text displaying value/goal.
  */
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';

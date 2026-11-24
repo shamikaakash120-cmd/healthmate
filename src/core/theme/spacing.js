@@ -3,10 +3,6 @@
  * @responsibility Layout metrics, 8-pt spacing grid, radii, and touch targets.
  */
 
-/**
- * 8-pt spacing grid scale.
- * Keeps visual hierarchy balanced, thumb-friendly, and consistently spaced.
- */
 export const SPACING = {
   xs: 4,    // Half step (4dp) - tight badge padding & micro gaps
   sm: 8,    // 1 unit (8dp) - standard element spacing & icon gap

@@ -5,7 +5,6 @@
 
 /**
  * Standard elevation tokens designed for soft, natural lighting.
- * Avoids harsh dark borders while maintaining distinct layer separation.
  */
 export const SHADOWS = {
   // Light mode soft card elevation

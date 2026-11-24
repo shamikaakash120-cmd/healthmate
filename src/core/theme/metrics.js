@@ -5,8 +5,6 @@
 
 /**
  * Metric configuration dictionary.
- * Each metric is permanently bound to its designated MaterialCommunityIcons glyph,
- * color token key, unit of measurement, sensible maximums, and default goal.
  */
 export const METRICS = {
   steps: {

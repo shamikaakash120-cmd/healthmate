@@ -2,16 +2,15 @@
  * @layer Core (Components)
  * @responsibility Metric summary card: tinted icon circle, label, large numeric value, and unit.
  */
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AppText from './AppText';
-import AppCard from './AppCard';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
+import AppCard from './AppCard';
+import AppText from './AppText';
 
 /**
- * Displays a single health metric with its color-coded icon, value, and unit.
- * All colors sourced from theme tokens via the metric's colorKey and tintKey.
+ * Displays a single health metric with its color-coded icon, value, and unit.All colors sourced from theme tokens via the metric's colorKey and tintKey.
  *
  * @param {object} props
  * @param {string} props.metricKey Key into METRICS config ('steps'|'calories'|'water').

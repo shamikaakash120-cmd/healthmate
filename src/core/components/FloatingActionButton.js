@@ -2,14 +2,13 @@
  * @layer Core (Components)
  * @responsibility Thumb-friendly floating action button anchored bottom-right.
  */
-import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme';
 
 /**
- * Floating action button positioned at the bottom-right of the screen.
- * Uses absolute positioning — the parent must be `position: relative`.
+ * Floating action button positioned at the bottom-right of the screen..
  *
  * @param {object} props
  * @param {string} [props.iconName='plus'] MaterialCommunityIcons icon name.

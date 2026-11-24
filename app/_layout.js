@@ -6,20 +6,16 @@ import { Stack } from 'expo-router';
 import { initDatabase, seedDatabase } from '../src/core/database';
 import { useTheme } from '../src/core/theme';
 
-/**
- * Root stack layout.
- * Awaits local database readiness and seed population before exposing child application routes.
- *
- * @returns {React.JSX.Element} The rendered navigation stack or startup state.
+/* 
+@returns {React.JSX.Element} 
  */
+
 export default function RootLayout() {
   const { colors, isDark } = useTheme();
   const [isDbReady, setIsDbReady] = useState(false);
   const [dbError, setDbError] = useState(null);
 
-  /**
-   * Initializes the SQLite database and populates initial seed data if empty.
-   */
+  // Initializes the SQLite database and populates initial seed data if empty.
   async function setup() {
     try {
       setDbError(null);

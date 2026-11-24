@@ -3,15 +3,13 @@
  * @responsibility Themed card container with consistent radius, shadow, and surface color.
  */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTheme } from '../theme';
 
 /**
- * Standard surface card with corner radius 20 and soft elevation.
- * Always uses theme surface color and shadow tokens — no hard-coded values.
- *
+ * Standard surface card with corner radius 20 and soft elevation. Always uses theme surface color and shadow tokens — no hard-coded values.
  * @param {object} props
- * @param {React.ReactNode} props.children Card content.
+ * @param {React.ReactNode} props.children 
  * @param {object} [props.style] Additional styles applied to the card container.
  * @param {string} [props.accessibilityLabel] Accessibility label for the card region.
  * @param {boolean} [props.noPad=false] Remove default inner padding.

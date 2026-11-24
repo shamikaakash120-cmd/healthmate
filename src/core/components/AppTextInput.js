@@ -1,18 +1,16 @@
 /**
  * @layer Core (Components)
  * @responsibility Themed text input with label, icon, unit suffix, helper text,
- *                inline error display, focus highlight, and numeric keyboard option.
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
-  TextInput,
   StyleSheet,
-  TouchableOpacity,
+  TextInput,
+  View
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AppText from './AppText';
 import { useTheme } from '../theme';
+import AppText from './AppText';
 
 /**
  * Styled text input bound entirely to design system tokens.
@@ -54,8 +52,8 @@ export default function AppTextInput({
   const borderColor = hasError
     ? colors.error
     : focused
-    ? colors.primary
-    : colors.border;
+      ? colors.primary
+      : colors.border;
 
   return (
     <View style={[styles.wrapper, style]}>

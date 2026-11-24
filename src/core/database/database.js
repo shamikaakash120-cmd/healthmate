@@ -30,11 +30,9 @@ let initPromise = null;
 
 /**
  * Opens and initializes the HealthMate SQLite database.
- * Sets up WAL mode, foreign keys, table schemas, and indexes if not already present.
- * Guaranteed to execute schema migrations only once per application lifecycle.
  *
  * @returns {Promise<import('expo-sqlite').SQLiteDatabase>} Resolved SQLite database instance.
- * @throws {Error} Descriptive error if database connection or initialization fails.
+ * @throws {Error} 
  */
 export async function initDatabase() {
   if (dbInstance) {
@@ -100,10 +98,8 @@ export async function initDatabase() {
 
 /**
  * Synchronously retrieves the active SQLite database instance.
- * Throws an error if called before initDatabase() has completed.
- *
  * @returns {import('expo-sqlite').SQLiteDatabase} Active SQLite database instance.
- * @throws {Error} If initDatabase() was not awaited prior to access.
+ * @throws {Error} 
  */
 export function getDb() {
   if (!dbInstance) {

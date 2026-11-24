@@ -3,19 +3,16 @@
  * @responsibility Global Snackbar/Toast provider with success and error styles,
  *                auto-dismiss, and imperative show API via a Zustand store.
  */
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
-import { create } from 'zustand';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AppText from './AppText';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet } from 'react-native';
+import { create } from 'zustand';
 import { useTheme } from '../theme';
+import AppText from './AppText';
 
-// ─── Zustand store for toast state ───────────────────────────────────────────
+// Zustand store for toast state
 
-/**
- * Zustand store that holds the current toast notification state.
- * Consumers call `useToastStore.getState().showToast(...)` from anywhere.
- */
+// Zustand store that holds the current toast notification state.
 export const useToastStore = create((set) => ({
   visible: false,
   message: '',
@@ -29,7 +26,7 @@ export const useToastStore = create((set) => ({
   showToast: (message, type = 'success') =>
     set({ visible: true, message, type }),
 
-  /** Hides the toast. */
+  // Hides the toast. 
   hideToast: () => set({ visible: false }),
 }));
 
@@ -49,15 +46,11 @@ export function showErrorToast(message) {
   useToastStore.getState().showToast(message, 'error');
 }
 
-// ─── Toast UI component ───────────────────────────────────────────────────────
+// Toast UI component 
 
 const AUTO_DISMISS_MS = 3000;
 
-/**
- * Renders the active toast notification.
- * Mount this once at the root layout level (inside app/_layout.js).
- * @returns {React.JSX.Element|null}
- */
+// @returns {React.JSX.Element|null}
 export function Toast() {
   const { colors, spacing, radius } = useTheme();
   const { visible, message, type, hideToast } = useToastStore();
