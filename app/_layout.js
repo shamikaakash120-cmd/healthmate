@@ -2,8 +2,11 @@
  * @layer app (Root Navigation Layout)
  * @responsibility Root navigation stack layout ensuring database initialization, global toast mounting, and modal routing.
  */
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { Stack } from 'expo-router';
 import { initDatabase, seedDatabase } from '../src/core/database';
+import { LoadingState, ErrorState, Toast } from '../src/core/components';
 import { useTheme } from '../src/core/theme';
 
 /* 
