@@ -28,12 +28,14 @@ This document details the architectural decisions, design patterns, and librarie
   - Decoupled from React render cycle; allows direct subscription and state updates.
   - Easily maps to the ViewModel role in MVVM architecture.
 
-## 4. Navigation: `Expo Router` (Tabs + Stack)
-- **Decision:** Use file-based routing via `Expo Router` with bottom tabs and nested stacks.
+## 4. Navigation: `Expo Router` (File-Based Navigation vs. Imperative React Navigation)
+- **Decision:** Use `Expo Router` with bottom tabs (`app/(tabs)/_layout.js`) and stack/modal routes (`app/record-form.js`).
 - **Justification:**
-  - Intuitive directory-based routing (`app/`).
-  - Native animations and deep linking built in.
-  - Bottom tabs ensure thumb-friendly one-handed navigation adhering to modern UX patterns.
+  - **File-Based Routing Convention:** Traditional React Navigation requires manual registration of screen stacks, nested navigator components, and verbose linking configuration objects. Expo Router automatically derives navigation hierarchy from the file system (`app/`), mirroring modern industry conventions (like Next.js App Router).
+  - **Strict Architectural Separation:** By having `app/` contain only route definitions, files in `app/` remain thin wrappers that import screens from `src/features/`. Route files contain zero presentation styling and zero logic, perfectly reinforcing our MVVM separation.
+  - **Route Groups & URL Hygiene:** Route groups using parentheses (e.g. `(tabs)`) allow grouping bottom navigation screens without adding artificial path segments (`/` instead of `/tabs/index`), ensuring clean routing and simple deep linking.
+  - **Modal Handling:** Declarative presentation flags (`presentation: 'modal'`) in `_layout.js` enable native modal slide-up transitions on mobile and accessible overlay behaviors on web without complex custom transition spec objects.
+  - **Built-in Deep Linking & Accessibility:** Screen titles, screen reader accessibility announcements, and URL query handling (`useLocalSearchParams()`) are deeply integrated out of the box.
 
 ## 5. UI & Design System: Material Design 3 with Calm Palette
 - **Decision:** Implement a custom design tokens system inspired by Material Design 3, centered on a calm, low-anxiety palette (warm off-white background, soft teal primary, deep slate typography, and consistent metric colors).

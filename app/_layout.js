@@ -1,11 +1,8 @@
 /**
  * @layer app (Root Navigation Layout)
- * @responsibility Root navigation stack layout ensuring database initialization and seeding before rendering screens.
+ * @responsibility Root navigation stack layout ensuring database initialization, global toast mounting, and modal routing.
  */
 import { Stack } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
-import { ErrorState, LoadingState, Toast } from '../src/core/components';
 import { initDatabase, seedDatabase } from '../src/core/database';
 import { useTheme } from '../src/core/theme';
 
@@ -62,10 +59,23 @@ export default function RootLayout() {
           headerShown: false,
         }}
       >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="dev-gallery" />
+        {/* Main bottom tabs group */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        {/* Modal form for adding or editing health records */}
+        <Stack.Screen
+          name="record-form"
+          options={{
+            presentation: 'modal',
+            headerShown: false,
+          }}
+        />
+
+        {/* Developer testing & CRUD diagnostics screen */}
+        <Stack.Screen name="dev-gallery" options={{ headerShown: false }} />
       </Stack>
-      {/* Global toast notification layer */}
+
+      {/* Global snackbar / toast notifications */}
       <Toast />
     </View>
   );

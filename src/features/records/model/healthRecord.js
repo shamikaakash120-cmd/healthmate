@@ -12,7 +12,7 @@
  * converts and validates them safely. No UI code. No DB code.
  */
 
-import { isValidISODate, isFutureDate, today } from '../../core/utils/dateUtils';
+import { isFutureDate, isValidISODate, today } from '../../core/utils/dateUtils';
 
 // ─── Limits (single source of truth for validation) ───────────────────────────
 
@@ -162,10 +162,10 @@ function validateMetricField(rawValue, fieldLabel, unit, min, max) {
  */
 export function validateRecord(input) {
   const errors = {
-    date:     validateDate(input?.date),
-    steps:    validateMetricField(input?.steps,    'Steps',    'steps', LIMITS.stepsMin,    LIMITS.stepsMax),
-    calories: validateMetricField(input?.calories, 'Calories', 'kcal',  LIMITS.caloriesMin, LIMITS.caloriesMax),
-    water:    validateMetricField(input?.water,    'Water',    'ml',    LIMITS.waterMin,    LIMITS.waterMax),
+    date: validateDate(input?.date),
+    steps: validateMetricField(input?.steps, 'Steps', 'steps', LIMITS.stepsMin, LIMITS.stepsMax),
+    calories: validateMetricField(input?.calories, 'Calories', 'kcal', LIMITS.caloriesMin, LIMITS.caloriesMax),
+    water: validateMetricField(input?.water, 'Water', 'ml', LIMITS.waterMin, LIMITS.waterMax),
   };
 
   const valid = Object.values(errors).every((e) => e === null);
@@ -190,9 +190,9 @@ export function validateRecord(input) {
 export function toHealthRecord(input, id = null) {
   return {
     id,
-    date:     String(input.date).trim(),
-    steps:    parseInt(String(input.steps).trim(), 10),
+    date: String(input.date).trim(),
+    steps: parseInt(String(input.steps).trim(), 10),
     calories: parseInt(String(input.calories).trim(), 10),
-    water:    parseInt(String(input.water).trim(), 10),
+    water: parseInt(String(input.water).trim(), 10),
   };
 }
