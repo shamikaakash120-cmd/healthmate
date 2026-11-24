@@ -1,17 +1,17 @@
 /**
  * @layer app (Root Navigation Layout)
- * @responsibility Root navigation stack layout ensuring database initialization before rendering screens.
+ * @responsibility Root navigation stack layout ensuring database initialization and seeding before rendering screens.
  */
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { Stack } from 'expo-router';
-import { initDatabase } from '../src/core/database';
-import { LoadingState, ErrorState, Toast } from '../src/core/components';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { ErrorState, LoadingState, Toast } from '../src/core/components';
+import { initDatabase, seedDatabase } from '../src/core/database';
 import { useTheme } from '../src/core/theme';
 
 /**
  * Root stack layout.
- * Awaits local database readiness before exposing child application routes.
+ * Awaits local database readiness and seed population before exposing child application routes.
  *
  * @returns {React.JSX.Element} The rendered navigation stack or startup state.
  */
@@ -21,12 +21,13 @@ export default function RootLayout() {
   const [dbError, setDbError] = useState(null);
 
   /**
-   * Initializes the SQLite database.
+   * Initializes the SQLite database and populates initial seed data if empty.
    */
   async function setup() {
     try {
       setDbError(null);
       await initDatabase();
+      await seedDatabase();
       setIsDbReady(true);
     } catch (err) {
       setDbError(err?.message || 'Could not connect to the local database.');
@@ -37,7 +38,7 @@ export default function RootLayout() {
     setup();
   }, []);
 
-  // While database migrations run, present a calming loading state
+  // While database migrations & seeding run, present a calming loading state
   if (!isDbReady) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
