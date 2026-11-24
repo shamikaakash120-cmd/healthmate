@@ -4,10 +4,10 @@
  *                animated stroke, and centre text displaying value/goal.
  */
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import AppText from './AppText';
 import { useTheme } from '../theme';
+import AppText from './AppText';
 
 // Create an animated version of the SVG Circle component
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);

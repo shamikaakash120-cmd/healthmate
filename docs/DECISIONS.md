@@ -75,3 +75,15 @@ This document details the architectural decisions, design patterns, and librarie
 - **Justification:**
   - **Preventing Off-By-One Day Shifts:** Standard JavaScript `Date.toISOString()` forces timestamps into UTC (`Z`). In local timezones ahead of UTC (e.g. BST `UTC+1` or IST `UTC+5:30`), a record logged at local midnight shifts to 23:00 or 18:30 on the preceding calendar day, corrupting historical logs and daily sum calculations.
   - **Local Parsing Consistency:** Parsing `YYYY-MM-DD` with `new Date("YYYY-MM-DD")` is treated by ECMAScript as UTC midnight, causing the same shifting bug when formatted in local time. HealthMate's `parseISODate` splits `[year, month, day]` and feeds numeric components to `new Date(year, month - 1, day)`, guaranteeing that the date stays pegged to the user's local calendar day across all regions and daylight saving adjustments.
+
+## 11. State Management: Choosing Zustand over React Context API and Redux Toolkit
+- **Decision:** Adopt `zustand` as the state management backbone for all feature ViewModels.
+- **Justification:**
+  - **Comparison with React Context API:**
+    - *Render Performance:* In React Context, any state modification causes *every* consuming component in the tree to re-render, regardless of whether that component cares about the modified property. For instance, updating `todayTotals` would trigger unwanted re-renders of record lists and filter forms. Zustand uses selector-based subscriptions (`useRecordsStore(state => state.todayTotals)`), ensuring components re-render strictly when their targeted state slice changes.
+    - *No Provider Wrapping:* Context requires wrapping the application hierarchy in nested providers (`<RecordsProvider>`, `<ThemeProvider>`, etc.), creating visual clutter and artificial component nesting. Zustand stores are global singletons accessible anywhere without providers.
+    - *Outside-Component Access:* Context values can only be accessed inside React component bodies via hooks. Zustand stores expose `.getState()` and `.setState()`, enabling seamless reads and dispatches from background tasks, utility routines, or test scripts.
+  - **Comparison with Redux Toolkit (RTK):**
+    - *Minimal Boilerplate:* Redux requires distinct definitions for action types, creators, slices, reducers, selectors, and thunk middleware. In Zustand, state properties and async actions live together inside a single intuitive factory.
+    - *Bundle Size & Simplicity:* Redux and RTK add significant bundle weight (~12–15 kB minified). Zustand has an ultra-lightweight footprint (~1.1 kB) and zero external dependencies, perfect for a lean coursework mobile app where data storage is already governed by SQLite.
+    - *Natural Fit for MVVM:* Zustand stores act as pure ViewModels: UI components simply subscribe to reactive store state and dispatch actions, while the store handles business logic, invokes domain validators, and orchestrates repository calls.

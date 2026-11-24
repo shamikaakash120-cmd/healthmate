@@ -1,12 +1,6 @@
 /**
  * @layer ViewModel (Records)
- * @responsibility Zustand store managing records state, validation, and CRUD operations.
+ * @responsibility Barrel export for the records feature ViewModel layer.
  */
+export * from './useRecordsStore';
 
-/**
- * Placeholder view model hook for records.
- * @returns {object} Records store state and actions.
- */
-export function useRecordsViewModelPlaceholder() {
-  return {};
-}
