@@ -3,11 +3,13 @@
  * @responsibility Full-screen loading and error states for async operations.
  */
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AppText from './AppText';
-import AppButton from './AppButton';
 import { useTheme } from '../theme';
+import AppButton from './AppButton';
+import AppText from './AppText';
+
+const ERROR_ICON_SIZE = 72;
 
 /**
  * Full-screen loading indicator with optional label.
@@ -20,7 +22,8 @@ export function LoadingState({ label = 'Loading…' }) {
   const { colors, spacing } = useTheme();
   return (
     <View
-      style={styles.container}
+      style={[styles.container, { paddingHorizontal: spacing.xl }]}
+      accessibilityRole="progressbar"
       accessibilityLiveRegion="polite"
       accessibilityLabel={label}
     >
@@ -28,6 +31,7 @@ export function LoadingState({ label = 'Loading…' }) {
       <AppText
         variant="body"
         color="textMuted"
+        align="center"
         style={{ marginTop: spacing.md }}
       >
         {label}
@@ -37,7 +41,7 @@ export function LoadingState({ label = 'Loading…' }) {
 }
 
 /**
- * Full-screen error state with friendly copy and a retry button.
+ * Full-screen error state with friendly copy and an optional retry button.
  *
  * @param {object} props
  * @param {string} [props.message] Error detail message shown to the user.
@@ -45,17 +49,28 @@ export function LoadingState({ label = 'Loading…' }) {
  * @returns {React.JSX.Element}
  */
 export function ErrorState({ message, onRetry }) {
-  const { colors, spacing } = useTheme();
+  const { colors, radius, spacing } = useTheme();
   return (
     <View
-      style={styles.container}
+      style={[styles.container, { paddingHorizontal: spacing.xl }]}
       accessibilityLiveRegion="assertive"
-      accessibilityLabel={`Error: ${message || 'Something went wrong'}`}
     >
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={`Something went wrong. ${message || ''}`}
+        style={styles.messageGroup}
+      >
       <View
         style={[
           styles.iconCircle,
-          { backgroundColor: colors.errorBg, marginBottom: spacing.lg },
+          {
+            width: ERROR_ICON_SIZE,
+            height: ERROR_ICON_SIZE,
+            borderRadius: radius.pill,
+            backgroundColor: colors.errorBg,
+            marginBottom: spacing.lg,
+          },
         ]}
         accessibilityElementsHidden
         importantForAccessibility="no"
@@ -67,20 +82,21 @@ export function ErrorState({ message, onRetry }) {
         />
       </View>
 
-      <AppText variant="heading" align="center" style={{ marginBottom: spacing.sm }}>
-        Something went wrong
-      </AppText>
+          <AppText variant="heading" align="center" style={{ marginBottom: spacing.sm }}>
+            Something went wrong
+          </AppText>
 
-      {message && (
-        <AppText
-          variant="body"
-          color="textMuted"
-          align="center"
-          style={{ marginBottom: spacing.lg }}
-        >
-          {message}
-        </AppText>
-      )}
+          {message && (
+            <AppText
+              variant="body"
+              color="textMuted"
+              align="center"
+              style={{ marginBottom: spacing.lg }}
+            >
+              {message}
+            </AppText>
+          )}
+        </View>
 
       {onRetry && (
         <AppButton
@@ -89,6 +105,7 @@ export function ErrorState({ message, onRetry }) {
           variant="secondary"
           iconName="refresh"
           accessibilityLabel="Retry the failed operation"
+          style={styles.retryBtn}
         />
       )}
     </View>
@@ -100,13 +117,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+  },
+  messageGroup: {
+    alignItems: 'center',
   },
   iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  retryBtn: {
+    minWidth: 160,
   },
 });

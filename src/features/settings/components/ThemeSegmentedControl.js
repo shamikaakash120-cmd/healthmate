@@ -3,9 +3,9 @@
  * @responsibility Three-option accessible segmented control for choosing app theme mode.
  */
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { AppText } from '../../../core/components';
+import { AppText, PressableScale } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 
 const THEME_OPTIONS = Object.freeze([
@@ -23,7 +23,7 @@ const THEME_OPTIONS = Object.freeze([
  * @returns {React.JSX.Element} Segmented control UI.
  */
 export default function ThemeSegmentedControl({ value, onChange }) {
-  const { colors, radius, spacing } = useTheme();
+  const { colors, radius, spacing, touchTarget } = useTheme();
 
   return (
     <View
@@ -34,6 +34,7 @@ export default function ThemeSegmentedControl({ value, onChange }) {
           borderColor: colors.border,
           borderRadius: radius.button,
           padding: spacing.xs,
+          gap: spacing.xs,
         },
       ]}
       accessibilityRole="radiogroup"
@@ -44,16 +45,19 @@ export default function ThemeSegmentedControl({ value, onChange }) {
         const foreground = isSelected ? colors.primaryText : colors.textMuted;
 
         return (
-          <TouchableOpacity
+          <PressableScale
             key={option.value}
-            activeOpacity={0.75}
+            scaleTo={0.97}
+            duration={150}
             onPress={() => onChange(option.value)}
+            containerStyle={styles.segmentWrap}
             accessibilityRole="radio"
             accessibilityState={{ selected: isSelected }}
             accessibilityLabel={`${option.label} theme`}
             style={[
               styles.segment,
               {
+                minHeight: touchTarget.min,
                 borderRadius: radius.button - 3,
                 backgroundColor: isSelected ? colors.primary : 'transparent',
                 paddingHorizontal: spacing.sm,
@@ -72,31 +76,34 @@ export default function ThemeSegmentedControl({ value, onChange }) {
               variant="caption"
               bold={isSelected}
               numberOfLines={1}
-              style={{
-                color: foreground,
-                fontSize: 13,
-              }}
+              style={[styles.labelText, { color: foreground }]}
             >
               {option.label}
             </AppText>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+          </PressableScale>
+  );
+})}
+    </View >
   );
 }
 
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     borderWidth: 1,
   },
-  segment: {
+  segmentWrap: {
     flex: 1,
-    minHeight: 48,
+    minWidth: 88,
+  },
+  segment: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  labelText: {
+    flexShrink: 1,
   },
 });

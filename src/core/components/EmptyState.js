@@ -3,14 +3,18 @@
  * @responsibility Friendly empty state with icon, title, hint, and optional action.
  */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AppText from './AppText';
-import AppButton from './AppButton';
 import { useTheme } from '../theme';
+import AppButton from './AppButton';
+import AppText from './AppText';
+
+const EMPTY_ICON_SIZE = 80;
 
 /**
  * Renders an encouraging empty state for lists and dashboard sections.
+ * Keeps interactive CTA outside any container accessibility grouping so screen readers
+ * can focus both the message and action button independently.
  *
  * @param {object} props
  * @param {string} [props.iconName='heart-pulse'] MaterialCommunityIcons icon name.
@@ -29,18 +33,32 @@ export default function EmptyState({
   onAction,
   style,
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors, radius, spacing } = useTheme();
 
   return (
     <View
-      style={[styles.container, { paddingVertical: spacing.xxl }, style]}
-      accessibilityRole="text"
-      accessibilityLabel={`${title}${hint ? '. ' + hint : ''}`}
+      style={[
+        styles.container,
+        {
+          paddingVertical: spacing.xxl,
+          paddingHorizontal: spacing.xl,
+        },
+        style,
+      ]}
     >
+      <View
+        accessible
+        accessibilityRole="text"
+        accessibilityLabel={`${title}${hint ? `. ${hint}` : ''}`}
+        style={styles.messageGroup}
+      >
       <View
         style={[
           styles.iconCircle,
           {
+            width: EMPTY_ICON_SIZE,
+            height: EMPTY_ICON_SIZE,
+            borderRadius: radius.pill,
             backgroundColor: colors.surfaceAlt,
             marginBottom: spacing.lg,
           },
@@ -55,20 +73,21 @@ export default function EmptyState({
         />
       </View>
 
-      <AppText variant="heading" align="center" style={{ marginBottom: spacing.sm }}>
-        {title}
-      </AppText>
+          <AppText variant="heading" align="center" style={{ marginBottom: spacing.sm }}>
+            {title}
+          </AppText>
 
-      {hint && (
-        <AppText
-          variant="body"
-          color="textMuted"
-          align="center"
-          style={{ marginBottom: spacing.lg, lineHeight: 22 }}
-        >
-          {hint}
-        </AppText>
-      )}
+          {hint && (
+            <AppText
+              variant="body"
+              color="textMuted"
+              align="center"
+              style={{ marginBottom: spacing.lg }}
+            >
+              {hint}
+            </AppText>
+          )}
+        </View>
 
       {actionLabel && onAction && (
         <AppButton
@@ -76,6 +95,7 @@ export default function EmptyState({
           onPress={onAction}
           variant="primary"
           accessibilityLabel={actionLabel}
+          style={styles.actionBtn}
         />
       )}
     </View>
@@ -87,13 +107,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+  },
+  messageGroup: {
+    alignItems: 'center',
   },
   iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  actionBtn: {
+    minWidth: 180,
   },
 });

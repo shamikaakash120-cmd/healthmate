@@ -2,9 +2,9 @@
  * @layer app (Tabs Navigation Layout)
  * @responsibility Bottom tab navigator layout configuring Home, History, and Settings tabs.
  */
-import React from 'react';
-import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+import React from 'react';
 import { useTheme } from '../../src/core/theme';
 
 /**
@@ -12,7 +12,7 @@ import { useTheme } from '../../src/core/theme';
  * @returns {React.JSX.Element} Rendered tab navigator.
  */
 export default function TabsLayout() {
-  const { colors, typography } = useTheme();
+  const { colors, spacing, typography } = useTheme();
 
   return (
     <Tabs
@@ -24,12 +24,12 @@ export default function TabsLayout() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 62,
-          paddingBottom: 8,
-          paddingTop: 6,
+          minHeight: 62,
+          paddingBottom: spacing.sm,
+          paddingTop: spacing.xs + 2,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: typography.caption.fontSize - 1,
           fontWeight: '600',
         },
       }}

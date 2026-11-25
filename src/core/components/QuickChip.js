@@ -1,11 +1,12 @@
 /**
  * @layer Core (Components)
- * @responsibility Small tappable pill chip for quick-add increments (e.g. "+250 ml").
+ * @responsibility Small tappable pill chip for quick-add increments with 48dp target and calm press scale.
  */
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import AppText from './AppText';
+import { StyleSheet } from 'react-native';
 import { useTheme } from '../theme';
+import AppText from './AppText';
+import PressableScale from './PressableScale';
 
 /**
  * Compact pill-shaped chip for quick metric increments.
@@ -15,7 +16,7 @@ import { useTheme } from '../theme';
  * @param {Function} props.onPress Press handler.
  * @param {string} [props.metricKey] If provided, uses that metric's color; otherwise uses primary.
  * @param {boolean} [props.selected=false] Renders in filled (selected) state.
- * @param {object} [props.style] Additional styles.
+ * @param {object} [props.style] Additional outer spacing styles.
  * @param {string} props.accessibilityLabel Accessibility label (required).
  * @returns {React.JSX.Element}
  */
@@ -27,15 +28,17 @@ export default function QuickChip({
   style,
   accessibilityLabel,
 }) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, touchTarget } = useTheme();
 
   const accentColor = metricKey ? colors[metricKey] : colors.primary;
   const tintColor = metricKey ? colors[`${metricKey}Tint`] : colors.surfaceAlt;
 
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
-      activeOpacity={0.7}
+      scaleTo={0.96}
+      duration={150}
+      containerStyle={style}
       accessibilityLabel={accessibilityLabel || label}
       accessibilityRole="button"
       accessibilityState={{ selected }}
@@ -46,20 +49,20 @@ export default function QuickChip({
           borderColor: accentColor,
           borderRadius: radius.pill,
           paddingHorizontal: spacing.md,
-          paddingVertical: spacing.xs + 2,
-          minHeight: 32,
+          paddingVertical: spacing.xs,
+          minHeight: touchTarget.min,
+          minWidth: touchTarget.min,
         },
-        style,
       ]}
     >
       <AppText
         variant="caption"
         bold
-        style={{ color: selected ? '#FFFFFF' : accentColor }}
+        style={{ color: selected ? colors.primaryText : accentColor }}
       >
         {label}
       </AppText>
-    </TouchableOpacity>
+    </PressableScale >
   );
 }
 

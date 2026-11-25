@@ -6,18 +6,20 @@ import React from 'react';
 import {
   SafeAreaView,
   ScrollView,
-  View,
-  StyleSheet,
   StatusBar,
+  StyleSheet,
+  View,
 } from 'react-native';
 import { useTheme } from '../theme';
 
 /**
  * Wraps every screen in a safe-area container with the correct background color.
+ *
  * @param {object} props
  * @param {React.ReactNode} props.children Screen content.
  * @param {boolean} [props.scroll=false] Enable vertical scrolling.
  * @param {boolean} [props.padded=true] Apply horizontal+vertical padding from spacing.lg.
+ * @param {Array<'top'|'right'|'bottom'|'left'>} [props.edges] Safe area edges to apply.
  * @param {object} [props.style] Additional styles for the inner container.
  * @param {object} [props.contentContainerStyle] Additional styles for ScrollView content.
  * @param {React.ReactElement} [props.refreshControl] Optional RefreshControl for pull-to-refresh when scroll is true.
@@ -27,6 +29,7 @@ export default function ScreenContainer({
   children,
   scroll = false,
   padded = true,
+  edges,
   style,
   contentContainerStyle,
   refreshControl,
@@ -37,6 +40,7 @@ export default function ScreenContainer({
 
   return (
     <SafeAreaView
+      edges={edges}
       style={[styles.safe, { backgroundColor: colors.background }]}
     >
       <StatusBar

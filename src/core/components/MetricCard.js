@@ -3,9 +3,9 @@
  * @responsibility Metric summary card: tinted icon circle, label, large numeric value,
  *                unit, and optional neutral "vs yesterday" comparison badge.
  */
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
 import { formatNumber } from '../utils/formatters';
 import AppCard from './AppCard';
@@ -13,7 +13,7 @@ import AppText from './AppText';
 
 /**
  * Displays a single health metric with its color-coded icon, value, unit, and optional
- * neutral comparison indicator against yesterday. All colors are sourced from theme tokens.
+ * neutral comparison indicator against yesterday. All tokens are sourced from useTheme().
  *
  * @param {object} props
  * @param {string} props.metricKey Key into METRICS config ('steps'|'calories'|'water').
@@ -34,7 +34,7 @@ import AppText from './AppText';
     style,
     accessibilityLabel,
   }) {
-    const { colors, spacing, radius, metrics } = useTheme();
+    const { colors, spacing, radius, touchTarget, metrics } = useTheme();
     const config = metrics[metricKey];
     if (!config) return null;
 
@@ -43,37 +43,37 @@ import AppText from './AppText';
     const displayLabel = label || config.label;
     const formattedValue = typeof value === 'number' ? formatNumber(value) : value;
 
-    const comparisonSummary = comparison?.a11yText || comparison?.label || '';
+  const comparisonSummary = comparison?.a11yText || comparison?.label || '';
     const a11yLabel =
       accessibilityLabel ||
-    `${displayLabel}: ${formattedValue} ${config.unit}${comparisonSummary ? `, ${comparisonSummary}` : ''}`;
+      `${displayLabel}: ${formattedValue} ${config.unit}${comparisonSummary ? `, ${comparisonSummary}` : ''}`;
 
-        // Soft, judgment-free palette: primary teal for upward progress, muted slate otherwise (never red).
-        const comparisonColor=
-    comparison?.direction === 'up' ? colors.primary : colors.textMuted;
+  // Soft, judgment-free palette: primary teal for upward progress, muted slate otherwise (never red).
+  const comparisonColor =
+      comparison?.direction === 'up' ? colors.primary : colors.textMuted;
 
-    const renderIconBadge = (extraStyle) => (
-      <View
-        style={[
-          styles.iconCircle,
-          {
-            backgroundColor: metricTint,
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-          },
-          extraStyle,
-        ]}
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      >
-        <MaterialCommunityIcons
-          name={config.icon}
-          size={24}
-          color={metricColor}
-        />
-      </View>
-    );
+  const renderIconBadge = (extraStyle) => (
+        <View
+          style={[
+            styles.iconCircle,
+            {
+              backgroundColor: metricTint,
+              width: touchTarget.min,
+              height: touchTarget.min,
+              borderRadius: radius.pill,
+            },
+            extraStyle,
+          ]}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        >
+          <MaterialCommunityIcons
+            name={config.icon}
+            size={24}
+            color={metricColor}
+          />
+        </View>
+      );
 
     const renderValueRow = () => (
       <View style={styles.valueRow}>
@@ -87,7 +87,7 @@ import AppText from './AppText';
         <AppText
           variant="caption"
           color="textMuted"
-          style={{ marginLeft: spacing.xs, alignSelf: 'flex-end', marginBottom: 4 }}
+          style={{ marginLeft: spacing.xs, alignSelf: 'flex-end', marginBottom: spacing.xs }}
         >
           {config.unit}
         </AppText>
@@ -121,13 +121,13 @@ import AppText from './AppText';
             name={iconName}
             size={13}
             color={comparisonColor}
-            style={{ marginRight: 4 }}
+            style={{ marginRight: spacing.xs }}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
           <AppText
             variant="caption"
-            style={{ color: comparisonColor, fontSize: 12, lineHeight: 16 }}
+            style={{ color: comparisonColor }}
             numberOfLines={1}
           >
             {comparison.label}
@@ -144,7 +144,7 @@ import AppText from './AppText';
         >
           {renderIconBadge({ marginRight: spacing.md })}
           <View style={styles.horizontalContent}>
-            <View style={styles.horizontalTopRow}>
+            <View style={[styles.horizontalTopRow, { gap: spacing.xs + 2 }]}>
               <AppText variant="caption" color="textMuted" bold>
                 {displayLabel}
               </AppText>
@@ -186,13 +186,13 @@ import AppText from './AppText';
     },
     horizontalContent: {
       flex: 1,
+      flexShrink: 1,
     },
     horizontalTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       flexWrap: 'wrap',
-      gap: 6,
       marginBottom: 2,
     },
     iconCircle: {
@@ -202,10 +202,12 @@ import AppText from './AppText';
     valueRow: {
       flexDirection: 'row',
       alignItems: 'baseline',
+      flexWrap: 'wrap',
     },
     comparisonPill: {
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'flex-start',
+      maxWidth: '100%',
     },
   });

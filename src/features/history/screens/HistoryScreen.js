@@ -16,6 +16,7 @@ import {
   AppText,
   EmptyState,
   ErrorState,
+  FadeInView,
   FloatingActionButton,
   LoadingState,
   ScreenContainer,
@@ -183,13 +184,15 @@ export default function HistoryScreen() {
   }, [recordToDelete, isDeleting, removeRecord]);
 
   const renderRecordItem = useCallback(
-    ({ item }) => (
+    ({ item, index }) => (
+    <FadeInView delay={Math.min(index, 6) * 25}>
       <HistoryRecordCard
         record={item}
         onEdit={handleEdit}
         onDelete={handleRequestDelete}
       />
-    ),
+    </FadeInView>
+  ),
     [handleEdit, handleRequestDelete]
   );
 
@@ -198,191 +201,201 @@ export default function HistoryScreen() {
   // ── Loading State (Initial load / Retry) ──────────────────────────────────
   if (!hasLoaded && isLoading) {
     return (
-      <ScreenContainer padded={false}>
-        <LoadingState label="Loading your health history…" />
-      </ScreenContainer>
-    );
+        <ScreenContainer padded={false} edges={['top', 'left', 'right']}>
+          <LoadingState label="Loading your health history…" />
+        </ScreenContainer>
+        );
   }
 
-  // ── Error State ───────────────────────────────────────────────────────────
-  if (error && !isLoading && !isRefreshing) {
+        // ── Error State ───────────────────────────────────────────────────────────
+        if (error && !isLoading && !isRefreshing) {
     return (
-      <ScreenContainer padded={false}>
-        <ErrorState message={error} onRetry={handleRetry} />
-      </ScreenContainer>
-    );
+          <ScreenContainer padded={false} edges={['top', 'left', 'right']}>
+            <ErrorState message={error} onRetry={handleRetry} />
+          </ScreenContainer>
+          );
   }
 
-  const countLabel =
-    records.length === 1 ? '1 entry' : `${records.length} entries`;
+          const countLabel =
+          records.length === 1 ? '1 entry' : `${records.length} entries`;
 
-  const listHeader = (
-    <View style={{ marginBottom: spacing.lg }}>
-      <View style={[styles.headerRow, { marginBottom: spacing.md }]}>
-        <View style={styles.headerTextCol}>
-          <AppText variant="caption" color="textMuted">
-            Daily Activity Log
-          </AppText>
-          <AppText variant="title" bold style={{ marginTop: 2 }}>
-            History
-          </AppText>
-        </View>
+          const listHeader = (
+          <View style={{ marginBottom: spacing.lg }}>
+              <View
+                style={[
+                  styles.headerRow,
+                  { paddingTop: spacing.sm, gap: spacing.sm, marginBottom: spacing.md },
+                ]}
+              >
+                <View style={styles.headerTextCol}>
+                  <AppText variant="caption" color="textMuted">
+                    Daily Activity Log
+                  </AppText>
+                    <AppText
+                      variant="title"
+                      bold
+                      accessibilityRole="header"
+                      style={{ marginTop: 2 }}
+                    >
+                      History
+                    </AppText>
+                </View>
 
-        {records.length > 0 && (
-          <View
-            style={[
-              styles.countPill,
-              {
-                backgroundColor: colors.surfaceAlt,
-                borderRadius: radius.pill,
-                paddingHorizontal: spacing.sm + 2,
-                paddingVertical: spacing.xs,
-              },
-            ]}
-            accessible
-            accessibilityLabel={`${countLabel} recorded`}
-          >
-            <AppText variant="caption" color="textMuted">
-              {countLabel}
-            </AppText>
-          </View>
-        )}
-      </View>
+                {records.length > 0 && (
+                  <View
+                    style={[
+                      styles.countPill,
+                      {
+                        backgroundColor: colors.surfaceAlt,
+                        borderRadius: radius.pill,
+                        paddingHorizontal: spacing.sm + spacing.xs,
+                        paddingVertical: spacing.xs,
+                      },
+                    ]}
+                    accessible
+                    accessibilityLabel={`${countLabel} recorded`}
+                  >
+                    <AppText variant="caption" color="textMuted">
+                      {countLabel}
+                    </AppText>
+                  </View>
+                )}
+              </View>
 
-      {/* ── Filter, Range, Sort, and CSV Export Toolbar ── */}
-      <HistoryToolbar
-        searchDate={searchDate}
-        rangeStart={rangeStart}
-        rangeEnd={rangeEnd}
-        sortOrder={sortOrder}
-        isExporting={isExporting}
-        onSelectDate={handleSelectDate}
-        onOpenRange={() => setShowRangeModal(true)}
-        onOpenSort={() => setShowSortMenu(true)}
-        onExportCsv={handleExportCsv}
-        onClearFilter={handleClearFilter}
-      />
-    </View>
-  );
+              {/* ── Filter, Range, Sort, and CSV Export Toolbar ── */}
+              <HistoryToolbar
+                searchDate={searchDate}
+                rangeStart={rangeStart}
+                rangeEnd={rangeEnd}
+                sortOrder={sortOrder}
+                isExporting={isExporting}
+                onSelectDate={handleSelectDate}
+                onOpenRange={() => setShowRangeModal(true)}
+                onOpenSort={() => setShowSortMenu(true)}
+                onExportCsv={handleExportCsv}
+                onClearFilter={handleClearFilter}
+              />
+            </View>
+            );
 
-  const hasRangeFilter = Boolean(rangeStart && rangeEnd);
+            const hasRangeFilter = Boolean(rangeStart && rangeEnd);
 
-  const listEmpty = (
-    <View style={styles.emptyWrap}>
-      <AppCard noPad>
-        {searchDate ? (
-          <EmptyState
-            iconName="calendar-remove-outline"
-            title="No entries for this date"
-            hint={`No health records were logged on ${formatDisplayDate(searchDate)}.`}
-            actionLabel="Clear filter"
-            onAction={handleClearFilter}
-          />
-        ) : hasRangeFilter ? (
-          <EmptyState
-            iconName="calendar-remove-outline"
-            title="No entries in this date range"
-            hint={`No health records were logged between ${formatDisplayDate(rangeStart)} and ${formatDisplayDate(rangeEnd)}.`}
-            actionLabel="Clear filter"
-            onAction={handleClearFilter}
-          />
-        ) : (
-          <EmptyState
-            iconName="calendar-blank-outline"
-            title="No entries yet. Tap + to log your first day."
-            hint="Your daily steps, calories burned, and hydration entries will appear here."
-            actionLabel="Add entry"
-            onAction={handleOpenAdd}
-          />
-        )}
-      </AppCard>
-    </View>
-  );
+            const listEmpty = (
+            <View style={styles.emptyWrap}>
+              <AppCard noPad>
+                {searchDate ? (
+                  <EmptyState
+                    iconName="calendar-remove-outline"
+                    title="No entries for this date"
+                    hint={`No health records were logged on ${formatDisplayDate(searchDate)}.`}
+                    actionLabel="Clear filter"
+                    onAction={handleClearFilter}
+                  />
+                ) : hasRangeFilter ? (
+                  <EmptyState
+                    iconName="calendar-remove-outline"
+                    title="No entries in this date range"
+                    hint={`No health records were logged between ${formatDisplayDate(rangeStart)} and ${formatDisplayDate(rangeEnd)}.`}
+                    actionLabel="Clear filter"
+                    onAction={handleClearFilter}
+                  />
+                ) : (
+                  <EmptyState
+                    iconName="calendar-blank-outline"
+                    title="No entries yet. Tap + to log your first day."
+                    hint="Your daily steps, calories burned, and hydration entries will appear here."
+                    actionLabel="Add entry"
+                    onAction={handleOpenAdd}
+                  />
+                )}
+              </AppCard>
+            </View>
+            );
 
-  return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <ScreenContainer padded={false}>
-        <FlatList
-          data={records}
-          keyExtractor={keyExtractor}
-          renderItem={renderRecordItem}
-          ListHeaderComponent={listHeader}
-          ListEmptyComponent={listEmpty}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            padding: spacing.lg,
-            paddingBottom: spacing.xxxl * 2,
-            flexGrow: 1,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
-        />
-      </ScreenContainer>
+            return (
+            <View style={[styles.root, { backgroundColor: colors.background }]}>
+                <ScreenContainer padded={false} edges={['top', 'left', 'right']}>
+                  <FlatList
+                    data={records}
+                    keyExtractor={keyExtractor}
+                    renderItem={renderRecordItem}
+                    ListHeaderComponent={listHeader}
+                    ListEmptyComponent={listEmpty}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{
+                      padding: spacing.lg,
+                      paddingBottom: spacing.xxxl * 2,
+                      flexGrow: 1,
+                    }}
+                    refreshControl={
+                      <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                        tintColor={colors.primary}
+                        colors={[colors.primary]}
+                      />
+                    }
+                  />
+                </ScreenContainer>
 
-      {/* ── Fixed Bottom-Right Floating Action Button ── */}
-      <FloatingActionButton
-        iconName="plus"
-        onPress={handleOpenAdd}
-        accessibilityLabel="Add new health entry"
-      />
+                {/* ── Fixed Bottom-Right Floating Action Button ── */}
+                <FloatingActionButton
+                  iconName="plus"
+                  onPress={handleOpenAdd}
+                  accessibilityLabel="Add new health entry"
+                />
 
-      {/* ── Delete Confirmation Dialog ── */}
-      <ConfirmDeleteModal
-        visible={!!recordToDelete}
-        entryDateLabel={
-          recordToDelete ? formatDisplayDate(recordToDelete.date) : undefined
-        }
-        isDeleting={isDeleting}
-        onCancel={handleCancelDelete}
-        onConfirm={handleConfirmDelete}
-      />
+                {/* ── Delete Confirmation Dialog ── */}
+                <ConfirmDeleteModal
+                  visible={!!recordToDelete}
+                  entryDateLabel={
+                    recordToDelete ? formatDisplayDate(recordToDelete.date) : undefined
+                  }
+                  isDeleting={isDeleting}
+                  onCancel={handleCancelDelete}
+                  onConfirm={handleConfirmDelete}
+                />
 
-      {/* ── Date Range Filter Modal ── */}
-      <DateRangeModal
-        visible={showRangeModal}
-        rangeStart={rangeStart}
-        rangeEnd={rangeEnd}
-        onApply={handleApplyRange}
-        onClear={handleClearFilter}
-        onClose={() => setShowRangeModal(false)}
-      />
+                {/* ── Date Range Filter Modal ── */}
+                <DateRangeModal
+                  visible={showRangeModal}
+                  rangeStart={rangeStart}
+                  rangeEnd={rangeEnd}
+                  onApply={handleApplyRange}
+                  onClear={handleClearFilter}
+                  onClose={() => setShowRangeModal(false)}
+                />
 
-      {/* ── Sort Menu Modal ── */}
-      <SortMenuModal
-        visible={showSortMenu}
-        sortOrder={sortOrder}
-        onSelect={handleSelectSort}
-        onClose={() => setShowSortMenu(false)}
-      />
-    </View>
-  );
+                {/* ── Sort Menu Modal ── */}
+                <SortMenuModal
+                  visible={showSortMenu}
+                  sortOrder={sortOrder}
+                  onSelect={handleSelectSort}
+                  onClose={() => setShowSortMenu(false)}
+                />
+            </View>
+            );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
+            const styles = StyleSheet.create({
+              root: {
+              flex: 1,
   },
-  headerRow: {
-    paddingTop: 8,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: 12,
+            headerRow: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
   },
-  headerTextCol: {
-    flex: 1,
+            headerTextCol: {
+              flex: 1,
+            minWidth: 160,
   },
-  countPill: {
-    alignSelf: 'center',
+            countPill: {
+              alignSelf: 'center',
   },
-  emptyWrap: {
-    flex: 1,
-    justifyContent: 'center',
+            emptyWrap: {
+              flex: 1,
+            justifyContent: 'center',
   },
 });

@@ -2,9 +2,9 @@
  * @layer Presentation (Dashboard Components)
  * @responsibility Displays consecutive logging-day streak with a flame icon and calm encouragement.
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppCard, AppText } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 
@@ -17,7 +17,7 @@ import { useTheme } from '../../../core/theme';
  * @returns {React.JSX.Element} Rendered streak banner card.
  */
 export default function StreakBannerCard({ streak }) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, touchTarget } = useTheme();
   const hasStreak = streak.count > 0;
 
   const badgeBg = hasStreak ? colors.caloriesTint : colors.surfaceAlt;
@@ -33,18 +33,20 @@ export default function StreakBannerCard({ streak }) {
           style={[
             styles.iconCircle,
             {
+              width: touchTarget.min,
+              height: touchTarget.min,
               backgroundColor: badgeBg,
               borderRadius: radius.pill,
               marginRight: spacing.md,
             },
           ]}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
         >
           <MaterialCommunityIcons
             name="fire"
             size={24}
             color={flameColor}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
           />
         </View>
 
@@ -55,7 +57,7 @@ export default function StreakBannerCard({ streak }) {
           <AppText
             variant="caption"
             color="textMuted"
-            style={{ marginTop: 2 }}
+            style={{ marginTop: spacing.xs / 2 }}
           >
             {streak.subtext}
           </AppText>
@@ -68,7 +70,7 @@ export default function StreakBannerCard({ streak }) {
               {
                 backgroundColor: badgeBg,
                 borderRadius: radius.pill,
-                paddingHorizontal: spacing.sm + 2,
+                paddingHorizontal: spacing.sm + spacing.xs,
                 paddingVertical: spacing.xs,
                 marginLeft: spacing.sm,
               },
@@ -77,7 +79,7 @@ export default function StreakBannerCard({ streak }) {
             <AppText
               variant="caption"
               bold
-              style={{ color: flameColor, fontSize: 12 }}
+              style={{ color: flameColor }}
             >
               {streak.count}d
             </AppText>
@@ -94,13 +96,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconCircle: {
-    width: 44,
-    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
   copyCol: {
     flex: 1,
+    flexShrink: 1,
   },
   countBadge: {
     alignItems: 'center',

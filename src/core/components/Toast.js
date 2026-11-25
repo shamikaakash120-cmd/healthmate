@@ -1,18 +1,23 @@
 /**
  * @layer Core (Components)
- * @responsibility Global Snackbar/Toast provider with success and error styles,
- *                auto-dismiss, and imperative show API via a Zustand store.
+ * @responsibility Global Snackbar/Toast provider with smooth 220ms fade/slide motion,
+ *                success and error tokens, auto-dismiss, and imperative Zustand store API.
  */
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Animated, Easing, Platform, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet } from 'react-native';
 import { create } from 'zustand';
 import { useTheme } from '../theme';
 import AppText from './AppText';
 
-// Zustand store for toast state
+const USE_NATIVE_DRIVER = Platform.OS !== 'web';
+const AUTO_DISMISS_MS = 2800;
+const ENTER_DURATION_MS = 220;
+const EXIT_DURATION_MS = 200;
 
-// Zustand store that holds the current toast notification state.
+/**
+ * Zustand store holding the current toast notification state.
+ */
 export const useToastStore = create((set) => ({
   visible: false,
   message: '',
@@ -26,7 +31,7 @@ export const useToastStore = create((set) => ({
   showToast: (message, type = 'success') =>
     set({ visible: true, message, type }),
 
-  // Hides the toast. 
+  /** Hides the toast. */
   hideToast: () => set({ visible: false }),
 }));
 
@@ -46,121 +51,141 @@ export function showErrorToast(message) {
   useToastStore.getState().showToast(message, 'error');
 }
 
-// Toast UI component 
-
-const AUTO_DISMISS_MS = 3000;
-
-// @returns {React.JSX.Element|null}
+/**
+ * Global Snackbar/Toast overlay anchored cleanly above the bottom tab bar.
+ * @returns {React.JSX.Element | null}
+ */
 export function Toast() {
-  const { colors, spacing, radius } = useTheme();
-  const { visible, message, type, hideToast } = useToastStore();
+  const { colors, elevatedShadow, spacing, radius } = useTheme();
+  const visible = useToastStore((state) => state.visible);
+  const message = useToastStore((state) => state.message);
+  const type = useToastStore((state) => state.type);
+  const hideToast = useToastStore((state) => state.hideToast);
 
-  const translateY = useRef(new Animated.Value(100)).current;
+  const translateY = useRef(new Animated.Value(32)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const dismissTimer = useRef(null);
+  const activeAnimation = useRef(null);
 
-  useEffect(() => {
-    if (visible) {
-      // Slide in
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 80,
-          friction: 10,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Auto-dismiss
-      dismissTimer.current = setTimeout(() => {
-        dismiss();
-      }, AUTO_DISMISS_MS);
-    }
-
-    return () => {
-      if (dismissTimer.current) clearTimeout(dismissTimer.current);
-    };
-  }, [visible, message]);
-
-  function dismiss() {
-    Animated.parallel([
+  const dismiss = useCallback(() => {
+    activeAnimation.current?.stop();
+    const exitAnim = Animated.parallel([
       Animated.timing(translateY, {
-        toValue: 100,
-        duration: 200,
-        useNativeDriver: true,
+        toValue: 32,
+        duration: EXIT_DURATION_MS,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: USE_NATIVE_DRIVER,
       }),
       Animated.timing(opacity, {
         toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
+        duration: EXIT_DURATION_MS,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: USE_NATIVE_DRIVER,
       }),
-    ]).start(() => hideToast());
-  }
+    ]);
+    activeAnimation.current = exitAnim;
+    exitAnim.start(({ finished }) => {
+      if (finished) hideToast();
+    });
+  }, [hideToast, opacity, translateY]);
 
-  if (!visible) return null;
+  useEffect(() => {
+      if (!visible) return undefined;
 
-  const isSuccess = type === 'success';
-  const bgColor = isSuccess ? colors.successBg : colors.errorBg;
-  const fgColor = isSuccess ? colors.success : colors.error;
-  const iconName = isSuccess ? 'check-circle-outline' : 'alert-circle-outline';
-  const a11yLabel = `${isSuccess ? 'Success' : 'Error'}: ${message}`;
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    activeAnimation.current?.stop();
 
-  return (
-    <Animated.View
-      style={[
-        styles.toast,
-        {
-          backgroundColor: bgColor,
-          borderLeftColor: fgColor,
-          borderRadius: radius.sm,
-          paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm + 2,
-          marginHorizontal: spacing.lg,
-          marginBottom: spacing.lg,
-          transform: [{ translateY }],
-          opacity,
-        },
-      ]}
-      accessibilityLiveRegion="polite"
-      accessibilityLabel={a11yLabel}
-      accessibilityRole="alert"
+  translateY.setValue(32);
+  opacity.setValue(0);
+
+    const enterAnim = Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: ENTER_DURATION_MS,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: USE_NATIVE_DRIVER,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: ENTER_DURATION_MS,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: USE_NATIVE_DRIVER,
+      }),
+    ]);
+  activeAnimation.current = enterAnim;
+  enterAnim.start();
+
+  dismissTimer.current = setTimeout(dismiss, AUTO_DISMISS_MS);
+
+  return () => {
+    if (dismissTimer.current) clearTimeout(dismissTimer.current);
+    activeAnimation.current?.stop();
+  };
+}, [visible, message, dismiss, opacity, translateY]);
+
+if (!visible) return null;
+
+const isSuccess = type === 'success';
+const bgColor = isSuccess ? colors.successBg : colors.errorBg;
+const fgColor = isSuccess ? colors.success : colors.error;
+const iconName = isSuccess ? 'check-circle-outline' : 'alert-circle-outline';
+const a11yLabel = `${isSuccess ? 'Success' : 'Error'}: ${message}`;
+
+return (
+  <Animated.View
+    pointerEvents="none"
+    style={[
+      styles.toast,
+      elevatedShadow,
+      {
+        backgroundColor: bgColor,
+        borderColor: colors.border,
+        borderLeftColor: fgColor,
+        borderRadius: radius.sm,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm + 2,
+        marginHorizontal: spacing.lg,
+        bottom: spacing.xxl + spacing.md,
+        transform: [{ translateY }],
+        opacity,
+      },
+    ]}
+    accessibilityLiveRegion="polite"
+    accessibilityLabel={a11yLabel}
+    accessibilityRole="alert"
+  >
+    <MaterialCommunityIcons
+      name={iconName}
+      size={20}
+      color={fgColor}
+      style={{ marginRight: spacing.sm }}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
+    <AppText
+      variant="body"
+      style={[styles.messageText, { color: fgColor }]}
     >
-      <MaterialCommunityIcons
-        name={iconName}
-        size={20}
-        color={fgColor}
-        style={{ marginRight: spacing.sm }}
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      />
-      <AppText
-        variant="body"
-        style={{ color: fgColor, flex: 1 }}
-      >
-        {message}
-      </AppText>
-    </Animated.View>
-  );
+      {message}
+    </AppText>
+  </Animated.View>
+);
 }
 
 const styles = StyleSheet.create({
   toast: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
+    maxWidth: 520,
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
     borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 6,
+  },
+  messageText: {
+    flex: 1,
+    flexShrink: 1,
   },
 });

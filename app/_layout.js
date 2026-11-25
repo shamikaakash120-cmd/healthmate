@@ -2,11 +2,11 @@
  * @layer app (Root Navigation Layout)
  * @responsibility Root navigation stack layout ensuring database initialization, global toast mounting, and modal routing.
  */
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { Stack } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
+import { ErrorState, LoadingState, Toast } from '../src/core/components';
 import { initDatabase, seedDatabase } from '../src/core/database';
-import { LoadingState, ErrorState, Toast } from '../src/core/components';
 import { useTheme } from '../src/core/theme';
 import { useSettingsStore } from '../src/features/settings/viewmodel';
 
@@ -54,41 +54,41 @@ export default function RootLayout() {
   }
 
   return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <StatusBar
-          barStyle={isDark ? 'light-content' : 'dark-content'}
-          backgroundColor={colors.background}
-        />
-        <Stack
-          screenOptions={{
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background}
+      />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      >
+        {/* Main bottom tabs group */}
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        {/* Modal form for adding or editing health records */}
+        <Stack.Screen
+          name="record-form"
+          options={{
+            presentation: 'modal',
             headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
           }}
-        >
-          {/* Main bottom tabs group */}
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        />
 
-          {/* Modal form for adding or editing health records */}
-          <Stack.Screen
-            name="record-form"
-            options={{
-              presentation: 'modal',
-              headerShown: false,
-            }}
-          />
+        {/* Developer testing & CRUD diagnostics screen */}
+        <Stack.Screen name="dev-gallery" options={{ headerShown: false }} />
+      </Stack>
 
-          {/* Developer testing & CRUD diagnostics screen */}
-          <Stack.Screen name="dev-gallery" options={{ headerShown: false }} />
-        </Stack>
-
-        {/* Global snackbar / toast notifications */}
-        <Toast />
-      </View>
-      );
+      {/* Global snackbar / toast notifications */}
+      <Toast />
+    </View>
+  );
 }
 
-      const styles = StyleSheet.create({
-        container: {
-        flex: 1,
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
   },
 });

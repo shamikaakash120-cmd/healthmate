@@ -1,14 +1,17 @@
 /**
  * @layer Core (Components)
- * @responsibility Thumb-friendly floating action button anchored bottom-right.
+ * @responsibility Thumb-friendly floating action button anchored bottom-right with calm press scale.
  */
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../theme';
+import PressableScale from './PressableScale';
+
+const FAB_SIZE = 56;
 
 /**
- * Floating action button positioned at the bottom-right of the screen..
+ * Floating action button positioned at the bottom-right of the screen.
  *
  * @param {object} props
  * @param {string} [props.iconName='plus'] MaterialCommunityIcons icon name.
@@ -23,26 +26,32 @@ export default function FloatingActionButton({
   accessibilityLabel,
   style,
 }) {
-  const { colors, shadow, spacing } = useTheme();
+  const { colors, elevatedShadow, radius, spacing } = useTheme();
 
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
-      activeOpacity={0.8}
+      scaleTo={0.94}
+      duration={150}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      style={[
-        styles.fab,
-        shadow,
+      containerStyle={[
+        styles.positioner,
         {
-          backgroundColor: colors.primary,
           bottom: spacing.xl,
           right: spacing.lg,
-          width: 56,
-          height: 56,
-          borderRadius: 28,
         },
         style,
+      ]}
+      style={[
+        styles.fab,
+        elevatedShadow,
+        {
+          backgroundColor: colors.primary,
+          width: FAB_SIZE,
+          height: FAB_SIZE,
+          borderRadius: radius.pill,
+        },
       ]}
     >
       <MaterialCommunityIcons
@@ -52,16 +61,16 @@ export default function FloatingActionButton({
         accessibilityElementsHidden
         importantForAccessibility="no"
       />
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-    // Minimum 48dp guaranteed by 56dp diameter
-    elevation: 6,
-  },
-});
+    positioner: {
+      position: 'absolute',
+    },
+    fab: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });

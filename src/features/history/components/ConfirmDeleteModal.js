@@ -27,7 +27,7 @@ export default function ConfirmDeleteModal({
   onCancel,
   onConfirm,
 }) {
-  const { colors, spacing } = useTheme();
+  const { colors, radius, spacing } = useTheme();
 
   return (
     <Modal
@@ -39,7 +39,10 @@ export default function ConfirmDeleteModal({
       }}
     >
       <View
-        style={styles.backdrop}
+        style={[
+          styles.backdrop,
+          { backgroundColor: colors.overlay, padding: spacing.lg },
+        ]}
         accessibilityViewIsModal
       >
         {/* Backdrop tap to cancel */}
@@ -56,7 +59,11 @@ export default function ConfirmDeleteModal({
           <View
             style={[
               styles.iconWell,
-              { backgroundColor: colors.errorBg, marginBottom: spacing.md },
+              {
+                backgroundColor: colors.errorBg,
+                borderRadius: radius.pill,
+                marginBottom: spacing.md,
+              },
             ]}
             accessibilityElementsHidden
             importantForAccessibility="no"
@@ -72,6 +79,7 @@ export default function ConfirmDeleteModal({
             variant="heading"
             bold
             align="center"
+            accessibilityRole="header"
             style={{ marginBottom: spacing.xs }}
           >
             Delete Entry
@@ -97,24 +105,24 @@ export default function ConfirmDeleteModal({
             </AppText>
           )}
 
-          <View style={styles.buttonsRow}>
-            <AppButton
-              label="Cancel"
-              variant="secondary"
-              disabled={isDeleting}
-              onPress={onCancel}
-              accessibilityLabel="Cancel deletion"
-              style={{ flex: 1, marginRight: spacing.sm }}
-            />
-            <AppButton
-              label="Delete"
-              variant="destructive"
-              loading={isDeleting}
-              onPress={onConfirm}
-              accessibilityLabel="Confirm delete entry"
-              style={{ flex: 1 }}
-            />
-          </View>
+            <View style={[styles.buttonsRow, { gap: spacing.sm }]}>
+              <AppButton
+                label="Cancel"
+                variant="secondary"
+                disabled={isDeleting}
+                onPress={onCancel}
+                accessibilityLabel="Cancel deletion"
+                style={{ flex: 1 }}
+              />
+              <AppButton
+                label="Delete"
+                variant="destructive"
+                loading={isDeleting}
+                onPress={onConfirm}
+                accessibilityLabel="Confirm delete entry"
+                style={{ flex: 1 }}
+              />
+            </View>
         </AppCard>
       </View>
     </Modal>
@@ -124,10 +132,8 @@ export default function ConfirmDeleteModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 32, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
   },
   dialogCard: {
     width: '100%',
@@ -137,12 +143,12 @@ const styles = StyleSheet.create({
   iconWell: {
     width: 56,
     height: 56,
-    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     width: '100%',
   },
 });

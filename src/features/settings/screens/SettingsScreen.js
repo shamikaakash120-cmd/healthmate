@@ -60,7 +60,7 @@ const GOAL_FIELDS = [
  */
 export default function SettingsScreen() {
   const router = useRouter();
-  const { colors, spacing, radius, isDark } = useTheme();
+  const { colors, spacing, radius, touchTarget, isDark } = useTheme();
 
   // ViewModel store state & actions
   const dailyGoals = useSettingsStore((state) => state.dailyGoals);
@@ -168,94 +168,95 @@ export default function SettingsScreen() {
       : `Using ${isDark ? 'Dark' : 'Light'} theme across the app`;
 
   return (
-          <ScreenContainer
-            scroll
-            padded
-            contentContainerStyle={{ paddingBottom: spacing.xxxl * 1.5 }}
+        <ScreenContainer
+          scroll
+          padded
+          edges={['top', 'left', 'right']}
+          contentContainerStyle={{ paddingBottom: spacing.xxxl * 1.5 }}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.keyboardAvoid}
           >
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={styles.keyboardAvoid}
-            >
-              {/* ── Screen Header ── */}
-              <View style={[styles.header, { marginBottom: spacing.lg }]}>
-                <AppText variant="caption" color="textMuted">
-                  Preferences
-                </AppText>
-                <AppText variant="title" bold style={{ marginTop: 2 }}>
-                  Settings
-                </AppText>
-              </View>
-
-            {/* ── Daily Goals Card ── */}
-            <AppCard style={{ marginBottom: spacing.lg }}>
-              <AppText variant="heading" bold style={{ marginBottom: spacing.xs }}>
-                Daily goals
+            {/* ── Screen Header ── */}
+            <View style={[styles.header, { paddingTop: spacing.sm, marginBottom: spacing.lg }]}>
+              <AppText variant="caption" color="textMuted">
+                Preferences
               </AppText>
-              <AppText
-                variant="body"
-                color="textMuted"
-                style={{ marginBottom: spacing.md }}
-              >
-                Set personal targets for your Dashboard summary and progress rings.
+              <AppText variant="title" bold accessibilityRole="header" style={{ marginTop: 2 }}>
+                Settings
               </AppText>
+            </View>
 
-                  {GOAL_FIELDS.map((field, index) => {
-                    const metric = METRICS[field.key];
-                    const isLast = index === GOAL_FIELDS.length - 1;
-                    const nextField = !isLast ? GOAL_FIELDS[index + 1] : null;
-                    const nextRef = nextField ? fieldRefs[nextField.key] : null;
+              {/* ── Daily Goals Card ── */}
+              <AppCard style={{ marginBottom: spacing.lg }}>
+                <AppText variant="heading" bold accessibilityRole="header" style={{ marginBottom: spacing.xs }}>
+                  Daily goals
+                </AppText>
+                <AppText
+                  variant="body"
+                  color="textMuted"
+                  style={{ marginBottom: spacing.md }}
+                >
+                  Set personal targets for your Dashboard summary and progress rings.
+                </AppText>
 
-                    return (
-                      <AppTextInput
-                        key={field.key}
-                        inputRef={fieldRefs[field.key]}
-                        label={field.label}
-                        value={drafts[field.key]}
-                        onChangeText={(text) => handleGoalChange(field.key, text)}
-                        placeholder={field.placeholder}
-                        iconName={metric.icon}
-                        iconColor={colors[metric.colorKey]}
-                        unit={metric.unit}
-                        helperText={getGoalRangeHint(field.key)}
-                        error={errors[field.key]}
-                        numeric
-                        returnKeyType={isLast ? 'done' : 'next'}
-                        blurOnSubmit={isLast}
-                        onSubmitEditing={
-                          isLast ? handleSaveGoals : () => nextRef?.current?.focus()
-                        }
-                        accessibilityLabel={field.a11yLabel}
-                        style={{ marginBottom: isLast ? spacing.lg : spacing.md }}
-                      />
-                    );
-                  })}
+                {GOAL_FIELDS.map((field, index) => {
+                  const metric = METRICS[field.key];
+                  const isLast = index === GOAL_FIELDS.length - 1;
+                  const nextField = !isLast ? GOAL_FIELDS[index + 1] : null;
+                  const nextRef = nextField ? fieldRefs[nextField.key] : null;
 
+                  return (
+                    <AppTextInput
+                      key={field.key}
+                      inputRef={fieldRefs[field.key]}
+                      label={field.label}
+                      value={drafts[field.key]}
+                      onChangeText={(text) => handleGoalChange(field.key, text)}
+                      placeholder={field.placeholder}
+                      iconName={metric.icon}
+                      iconColor={colors[metric.colorKey]}
+                      unit={metric.unit}
+                      helperText={getGoalRangeHint(field.key)}
+                      error={errors[field.key]}
+                      numeric
+                      returnKeyType={isLast ? 'done' : 'next'}
+                      blurOnSubmit={isLast}
+                      onSubmitEditing={
+                        isLast ? handleSaveGoals : () => nextRef?.current?.focus()
+                      }
+                      accessibilityLabel={field.a11yLabel}
+                      style={{ marginBottom: isLast ? spacing.lg : spacing.md }}
+                    />
+                  );
+                })}
+
+                <AppButton
+                  label="Save Goals"
+                  variant="primary"
+                  iconName="check"
+                  loading={isSavingGoals}
+                  onPress={handleSaveGoals}
+                  accessibilityLabel="Save daily goals"
+                />
+
+                {!isDefaultGoals && (
                   <AppButton
-                    label="Save Goals"
-                    variant="primary"
-                    iconName="check"
-                    loading={isSavingGoals}
-                    onPress={handleSaveGoals}
-                    accessibilityLabel="Save daily goals"
+                    label="Reset to Defaults"
+                    variant="text"
+                    iconName="restore"
+                    disabled={isSavingGoals}
+                    onPress={handleResetDefaults}
+                    accessibilityLabel="Reset daily goals to default values"
+                    style={{ marginTop: spacing.xs }}
                   />
-
-                    {!isDefaultGoals && (
-                      <AppButton
-                        label="Reset to Defaults"
-                        variant="text"
-                        iconName="restore"
-                        disabled={isSavingGoals}
-                        onPress={handleResetDefaults}
-                        accessibilityLabel="Reset daily goals to default values"
-                        style={{ marginTop: spacing.xs }}
-                      />
-                    )}
-        </AppCard>
+                )}
+              </AppCard>
 
               {/* ── Appearance Card ── */}
               <AppCard style={{ marginBottom: spacing.lg }}>
-                <AppText variant="heading" bold style={{ marginBottom: spacing.xs }}>
+                <AppText variant="heading" bold accessibilityRole="header" style={{ marginBottom: spacing.xs }}>
                   Appearance
                 </AppText>
                 <AppText
@@ -269,101 +270,102 @@ export default function SettingsScreen() {
                   value={themeMode}
                   onChange={handleSelectTheme}
                 />
-          </AppCard>
+              </AppCard>
 
-          {/* ── About HealthMate Card ── */}
-          <AppCard style={{ marginBottom: spacing.lg }}>
-            <View style={[styles.aboutHeader, { marginBottom: spacing.sm }]}>
-              <View
-                style={[
-                  styles.aboutIconBadge,
-                  {
-                    backgroundColor: colors.surfaceAlt,
-                    borderRadius: radius.button,
-                    marginRight: spacing.sm,
-                  },
-                ]}
-              >
-                <MaterialCommunityIcons
-                  name="heart-pulse"
-                  size={22}
-                  color={colors.primary}
-                  accessibilityElementsHidden
-                  importantForAccessibility="no"
-                />
-              </View>
-              <View style={styles.aboutTitleCol}>
-                <AppText variant="heading" bold>
-                  About {APP_NAME}
+                  {/* ── About HealthMate Card ── */}
+                  <AppCard style={{ marginBottom: spacing.lg }}>
+                    <View style={[styles.aboutHeader, { marginBottom: spacing.sm }]}>
+                      <View
+                        style={[
+                          styles.aboutIconBadge,
+                          {
+                            width: touchTarget.min,
+                            height: touchTarget.min,
+                            backgroundColor: colors.surfaceAlt,
+                            borderRadius: radius.button,
+                            marginRight: spacing.sm,
+                          },
+                        ]}
+                        accessibilityElementsHidden
+                        importantForAccessibility="no"
+                      >
+                        <MaterialCommunityIcons
+                          name="heart-pulse"
+                          size={22}
+                          color={colors.primary}
+                        />
+                      </View>
+                  <View style={styles.aboutTitleCol}>
+                    <AppText variant="heading" bold accessibilityRole="header">
+                      About {APP_NAME}
+                    </AppText>
+                    <AppText variant="caption" color="primary" bold>
+                      Version {APP_VERSION}
+                    </AppText>
+                  </View>
+                </View>
+                <AppText variant="body" color="textMuted">
+                  Calm daily tracking for steps, active calories burned, and hydration.
+                  Your records and preferences stay privately in your device SQLite database.
                 </AppText>
-                <AppText variant="caption" color="primary" bold>
-                  Version {APP_VERSION}
-                </AppText>
-              </View>
-            </View>
-            <AppText variant="body" color="textMuted">
-              Calm daily tracking for steps, active calories burned, and hydration.
-              Your records and preferences stay privately in your device SQLite database.
-            </AppText>
-          </AppCard>
+              </AppCard>
 
-          {/* ── Data & Developer Tools (retained until cleanup) ── */}
-          <AppCard style={{ marginBottom: spacing.md }}>
-            <AppText variant="heading" bold style={{ marginBottom: spacing.xs }}>
-              Database & Developer Tools
-            </AppText>
-            <AppText
-              variant="body"
-              color="textMuted"
-              style={{ marginBottom: spacing.md }}
-            >
-              Manage sample dataset or run CRUD test verification.
-            </AppText>
-            <View style={styles.actionsCol}>
-              <AppButton
-                label="Re-seed Sample Data"
-                variant="secondary"
-                iconName="database-refresh"
-                loading={isSeeding}
-                onPress={handleReSeed}
-                accessibilityLabel="Re-seed SQLite database with dummy data"
-                style={{ marginBottom: spacing.sm }}
-              />
-              <AppButton
-                label="Open Dev & CRUD Gallery"
-                variant="text"
-                iconName="flask-outline"
-                onPress={() => router.push('/dev-gallery')}
-                accessibilityLabel="Open developer component gallery and CRUD test runner"
-              />
-            </View>
-          </AppCard>
-        </KeyboardAvoidingView>
-    </ScreenContainer>
-  );
+                {/* ── Data & Developer Tools (retained until cleanup) ── */}
+                <AppCard style={{ marginBottom: spacing.md }}>
+                  <AppText variant="heading" bold accessibilityRole="header" style={{ marginBottom: spacing.xs }}>
+                    Database & Developer Tools
+                  </AppText>
+                  <AppText
+                    variant="body"
+                    color="textMuted"
+                    style={{ marginBottom: spacing.md }}
+                  >
+                    Manage sample dataset or run CRUD test verification.
+                  </AppText>
+                  <View style={styles.actionsCol}>
+                    <AppButton
+                      label="Re-seed Sample Data"
+                      variant="secondary"
+                      iconName="database-refresh"
+                      loading={isSeeding}
+                      onPress={handleReSeed}
+                      accessibilityLabel="Re-seed SQLite database with dummy data"
+                      style={{ marginBottom: spacing.sm }}
+                    />
+                    <AppButton
+                      label="Open Dev & CRUD Gallery"
+                      variant="text"
+                      iconName="flask-outline"
+                      onPress={() => router.push('/dev-gallery')}
+                      accessibilityLabel="Open developer component gallery and CRUD test runner"
+                    />
+                  </View>
+                </AppCard>
+              </KeyboardAvoidingView>
+            </ScreenContainer>
+            );
 }
 
-const styles = StyleSheet.create({
-  keyboardAvoid: {
-    flex: 1,
+            const styles = StyleSheet.create({
+              keyboardAvoid: {
+              flex: 1,
   },
-  header: {
-    paddingTop: 8,
+            header: {
+            width: '100%',
   },
-    aboutHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    aboutIconBadge: {
-      width: 44,
-      height: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    aboutTitleCol: {
-      flex: 1,
-    },
-    actionsCol: {
-      flexDirection: 'column',
-    },
-  });
+            aboutHeader: {
+              flexDirection: 'row',
+            alignItems: 'center',
+  },
+            aboutIconBadge: {
+              alignItems: 'center',
+            justifyContent: 'center',
+  },
+            aboutTitleCol: {
+              flex: 1,
+            flexShrink: 1,
+  },
+            actionsCol: {
+              flexDirection: 'column',
+  },
+});

@@ -6,8 +6,8 @@ import { useColorScheme } from 'react-native';
 import { create } from 'zustand';
 import { darkColors, lightColors } from './colors';
 import { METRICS } from './metrics';
-import { SHADOWS, getShadow } from './shadows';
-import { RADIUS, SPACING } from './spacing';
+import { SHADOWS, getElevatedShadow, getShadow } from './shadows';
+import { RADIUS, SPACING, TOUCH_TARGET } from './spacing';
 import { TYPOGRAPHY } from './typography';
 
 // Re-export all individual modules for granular imports
@@ -63,7 +63,9 @@ export function useTheme() {
     typography: TYPOGRAPHY,
     spacing: SPACING,
     radius: RADIUS,
+    touchTarget: TOUCH_TARGET,
     shadow: getShadow(isDark),
+    elevatedShadow: getElevatedShadow(isDark),
     metrics: METRICS,
   };
 }
@@ -73,4 +75,15 @@ export function useTheme() {
  * @returns {object} Application theme tokens snapshot.
  */
 export function getThemeTokens() {
+  return {
+    colors: lightColors,
+    darkColors,
+    typography: TYPOGRAPHY,
+    spacing: SPACING,
+    radius: RADIUS,
+    touchTarget: TOUCH_TARGET,
+    shadow: SHADOWS.soft,
+    elevatedShadow: SHADOWS.elevated,
+    metrics: METRICS,
+  };
 }

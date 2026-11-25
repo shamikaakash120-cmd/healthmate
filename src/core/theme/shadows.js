@@ -23,6 +23,21 @@ export const SHADOWS = {
     shadowRadius: 8,
     elevation: 2,
   },
+  // Elevated overlay shadow (Snackbars, FABs, floating popovers)
+  elevated: {
+    shadowColor: '#1F2D3D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  elevatedDark: {
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    elevation: 6,
+  },
 };
 
 /**
@@ -32,4 +47,13 @@ export const SHADOWS = {
  */
 export function getShadow(isDark = false) {
   return isDark ? SHADOWS.softDark : SHADOWS.soft;
+}
+
+/**
+ * Resolves the elevated shadow style for overlays/FABs/snackbars.
+ * @param {boolean} [isDark=false] Whether dark mode is active.
+ * @returns {typeof SHADOWS.elevated} Shadow style object.
+ */
+export function getElevatedShadow(isDark = false) {
+  return isDark ? SHADOWS.elevatedDark : SHADOWS.elevated;
 }

@@ -1,18 +1,14 @@
 /**
  * @layer Core (Components)
  * @responsibility Themed button with primary/secondary/text/destructive variants,
- *                loading state, press feedback, and minimum 48dp touch target.
+ *                calm 150ms press scale, loading state, and minimum 48dp touch target.
  */
 import React from 'react';
-import {
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AppText from './AppText';
 import { useTheme } from '../theme';
+import AppText from './AppText';
+import PressableScale from './PressableScale';
 
 /**
  * Reusable button component covering all interaction contexts.
@@ -24,8 +20,8 @@ import { useTheme } from '../theme';
  * @param {boolean} [props.loading=false] Shows an activity spinner and disables press.
  * @param {boolean} [props.disabled=false] Prevents interaction and reduces opacity.
  * @param {string} [props.iconName] Optional MaterialCommunityIcons icon displayed left of label.
- * @param {object} [props.style] Additional outer container styles.
- * @param {string} props.accessibilityLabel Accessibility label (required for screen readers).
+ * @param {object} [props.style] Additional outer container styles (e.g. flex, margins).
+ * @param {string} [props.accessibilityLabel] Accessibility label (defaults to label).
  * @returns {React.JSX.Element}
  */
 export default function AppButton({
@@ -38,11 +34,10 @@ export default function AppButton({
   style,
   accessibilityLabel,
 }) {
-  const { colors, spacing, radius, typography } = useTheme();
+  const { colors, spacing, radius, touchTarget } = useTheme();
 
   const isDisabled = disabled || loading;
 
-  // Resolve variant-specific styles from tokens
   const variantStyles = {
     primary: {
       bg: colors.primary,
@@ -64,7 +59,7 @@ export default function AppButton({
     },
     destructive: {
       bg: colors.error,
-      fg: '#FFFFFF',
+      fg: colors.primaryText,
       borderColor: 'transparent',
       borderWidth: 0,
     },
@@ -73,10 +68,12 @@ export default function AppButton({
   const v = variantStyles[variant] || variantStyles.primary;
 
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.75}
+      scaleTo={0.97}
+      duration={150}
+      containerStyle={style}
       accessibilityLabel={accessibilityLabel || label}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
@@ -90,9 +87,8 @@ export default function AppButton({
           paddingHorizontal: spacing.lg,
           paddingVertical: spacing.sm + 2,
           opacity: isDisabled ? 0.5 : 1,
-          minHeight: 48,
+          minHeight: touchTarget.min,
         },
-        style,
       ]}
     >
       {loading ? (
@@ -105,19 +101,20 @@ export default function AppButton({
               size={18}
               color={v.fg}
               style={{ marginRight: spacing.xs }}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
             />
           )}
           <AppText
             variant="body"
             bold
-            style={{ color: v.fg }}
-            accessibilityLabel={label}
+            style={[styles.labelText, { color: v.fg }]}
           >
             {label}
           </AppText>
         </View>
       )}
-    </TouchableOpacity>
+    </PressableScale >
   );
 }
 
@@ -126,9 +123,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    width: '100%',
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 1,
+  },
+  labelText: {
+    flexShrink: 1,
+    textAlign: 'center',
   },
 });

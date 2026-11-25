@@ -1,19 +1,53 @@
 /**
  * @layer Presentation (Dashboard Components)
  * @responsibility 7-day weekly summary card with selectable metric tabs, totals & daily averages,
- *                and a plain-View bar chart highlighting today (no chart libraries).
+ *                and an animated plain-View bar chart highlighting today (no chart libraries).
  */
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { AppCard, AppText } from '../../../core/components';
+import { AppCard, AppText, PressableScale } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 import { formatNumber } from '../../../core/utils/formatters';
 
 const BAR_CHART_HEIGHT = 92;
+const BAR_ANIMATION_MS = 280;
 
 /**
- * Pure UI component rendering the 7-day weekly totals, averages, and bar chart.
+ * Animated plain-View bar filling smoothly to its target height over 280ms.
+ */
+function AnimatedWeeklyBar({ targetHeight, color, radiusValue, isToday }) {
+  const heightAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.timing(heightAnim, {
+      toValue: targetHeight,
+      duration: BAR_ANIMATION_MS,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    });
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [heightAnim, targetHeight]);
+
+  return (
+    <Animated.View
+      style={{
+        width: '100%',
+        height: heightAnim,
+        backgroundColor: color,
+        borderRadius: radiusValue,
+        opacity: isToday ? 1 : 0.78,
+      }}
+    />
+  );
+}
+
+/**
+ * Pure UI component rendering the 7-day weekly totals, averages, and animated plain-View bar chart.
  *
  * @param {object} props
  * @param {object} props.weeklySummary Derived weekly summary object from `useDashboardViewModel`.
@@ -22,7 +56,7 @@ const BAR_CHART_HEIGHT = 92;
  * @returns {React.JSX.Element} Rendered weekly summary card.
  */
 export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, touchTarget } = useTheme();
   const {
     selectedMetric,
     tabs,
@@ -44,47 +78,51 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
   return (
     <AppCard style={{ marginBottom: spacing.md }}>
       {/* ── Header ── */}
-      <View style={[styles.headerRow, { marginBottom: spacing.sm + 2 }]}>
-        <AppText variant="heading" bold>
-          Weekly Summary
-        </AppText>
-        <AppText variant="caption" color="textMuted">
-          {subtitle}
-        </AppText>
-      </View>
+        <View style={[styles.headerRow, { gap: spacing.xs, marginBottom: spacing.sm + 2 }]}>
+          <AppText variant="heading" bold>
+            Weekly Summary
+          </AppText>
+          <AppText variant="caption" color="textMuted">
+            {subtitle}
+          </AppText>
+        </View>
 
-      {/* ── Metric Selector Tabs ── */}
-      <View
-        style={[styles.tabsRow, { marginBottom: spacing.md }]}
-        accessibilityRole="tablist"
-        accessibilityLabel="Select weekly metric chart"
-      >
-        {tabs.map((tab, index) => {
-          const isSelected = tab.key === selectedMetric;
-          const tabAccent = colors[tab.colorKey];
+        {/* ── Metric Selector Tabs (48dp touch targets) ── */}
+        <View
+          style={[styles.tabsRow, { gap: spacing.xs + 2, marginBottom: spacing.md }]}
+          accessibilityRole="tablist"
+          accessibilityLabel="Select weekly metric chart"
+        >
+            {
+              tabs.map((tab) => {
+                const isSelected = tab.key === selectedMetric;
+                const tabAccent = colors[tab.colorKey];
 
-          return (
-            <TouchableOpacity
+                return (
+            <PressableScale
               key={tab.key}
-              activeOpacity={0.75}
+              scaleTo={0.97}
+              duration={150}
               onPress={() => onSelectMetric(tab.key)}
+              containerStyle={styles.tabWrap}
               accessibilityRole="tab"
               accessibilityState={{ selected: isSelected }}
               accessibilityLabel={`Show weekly ${tab.label.toLowerCase()} chart`}
               style={[
                 styles.tabButton,
                 {
+                  minHeight: touchTarget.min,
                   backgroundColor: isSelected ? tabAccent : colors.surfaceAlt,
                   borderRadius: radius.button - 2,
-                  marginRight: index < tabs.length - 1 ? spacing.xs + 2 : 0,
+                  paddingHorizontal: spacing.xs + 2,
                 },
               ]}
             >
               <MaterialCommunityIcons
                 name={tab.icon}
-                size={15}
+                size={16}
                 color={isSelected ? colors.primaryText : tabAccent}
-                style={{ marginRight: 4 }}
+                style={{ marginRight: spacing.xs }}
                 accessibilityElementsHidden
                 importantForAccessibility="no"
               />
@@ -94,13 +132,13 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 numberOfLines={1}
                 style={{
                   color: isSelected ? colors.primaryText : colors.text,
-                  fontSize: 12,
+                  flexShrink: 1,
                 }}
               >
                 {tab.label}
               </AppText>
-            </TouchableOpacity>
-          );
+            </PressableScale>
+        );
         })}
       </View>
 
@@ -113,6 +151,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
             borderRadius: radius.button - 2,
             paddingHorizontal: spacing.md,
             paddingVertical: spacing.sm + 2,
+            gap: spacing.md,
             marginBottom: spacing.md,
           },
         ]}
@@ -128,19 +167,12 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
             <AppText
               variant="caption"
               color="textMuted"
-              style={{ marginLeft: 4 }}
+              style={{ marginLeft: spacing.xs }}
             >
               {activeSummary.unit}
             </AppText>
           </View>
         </View>
-
-        <View
-          style={[
-            styles.statDivider,
-            { backgroundColor: colors.border, marginHorizontal: spacing.md },
-          ]}
-        />
 
         <View style={styles.statCol}>
           <AppText variant="caption" color="textMuted">
@@ -153,7 +185,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
             <AppText
               variant="caption"
               color="textMuted"
-              style={{ marginLeft: 4 }}
+              style={{ marginLeft: spacing.xs }}
             >
               {activeSummary.unit}/day
             </AppText>
@@ -161,7 +193,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
         </View>
       </View>
 
-      {/* ── Plain-View 7-Day Bar Chart ── */}
+      {/* ── Animated Plain-View 7-Day Bar Chart ── */}
       <View
         style={[styles.chartRow, { marginBottom: spacing.sm }]}
         accessibilityLabel={`7-day ${activeSummary.label} bar chart`}
@@ -187,7 +219,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                   fontSize: 10,
                   lineHeight: 14,
                   minHeight: 14,
-                  marginBottom: 4,
+                  marginBottom: spacing.xs,
                   fontWeight: bar.isToday ? '700' : '500',
                   color: bar.isToday ? activeColor : colors.textMuted,
                 }}
@@ -195,7 +227,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 {bar.compactValue || '\u00A0'}
               </AppText>
 
-              {/* Vertical track & filled bar */}
+              {/* Vertical track & animated bar */}
               <View
                 style={[
                   styles.barTrack,
@@ -208,17 +240,12 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                   },
                 ]}
               >
-                {barHeight > 0 && (
-                  <View
-                    style={{
-                      width: '100%',
-                      height: barHeight,
-                      backgroundColor: activeColor,
-                      borderRadius: radius.sm - 1,
-                      opacity: bar.isToday ? 1 : 0.78,
-                    }}
-                  />
-                )}
+                <AnimatedWeeklyBar
+                  targetHeight={barHeight}
+                  color={activeColor}
+                  radiusValue={radius.sm - 1}
+                  isToday={bar.isToday}
+                />
               </View>
 
               {/* Day initial below bar (Today highlighted) */}
@@ -226,7 +253,8 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 style={[
                   styles.dayBadge,
                   {
-                    marginTop: 6,
+                    marginTop: spacing.xs + 2,
+                    borderRadius: radius.pill,
                     backgroundColor: bar.isToday ? activeTint : 'transparent',
                     borderColor: bar.isToday ? activeColor : 'transparent',
                     borderWidth: bar.isToday ? 1.5 : 0,
@@ -258,7 +286,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
             {
               backgroundColor: colors.surfaceAlt,
               borderRadius: radius.sm,
-              paddingHorizontal: spacing.sm + 2,
+              paddingHorizontal: spacing.sm + spacing.xs,
               paddingVertical: spacing.xs + 2,
               marginBottom: spacing.sm,
             },
@@ -267,7 +295,7 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
           <AppText
             variant="caption"
             color="textMuted"
-            style={{ textAlign: 'center' }}
+            align="center"
           >
             {!hasData
               ? 'No records logged in the last 7 days yet. Add an entry to see your weekly chart.'
@@ -276,40 +304,45 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
         </View>
       )}
 
-      {/* ── All-Metrics 7-Day Breakdown ── */}
+      {/* ── All-Metrics 7-Day Breakdown (48dp interactive rows) ── */}
       <View
         style={[
           styles.breakdownContainer,
           {
             borderTopColor: colors.border,
-            paddingTop: spacing.sm + 2,
+            paddingTop: spacing.sm,
             marginTop: spacing.xs,
           },
         ]}
       >
-        {summaries.map((item, idx) => {
-          const isCurrent = item.key === selectedMetric;
-          const itemColor = colors[item.colorKey];
+          {
+            summaries.map((item) => {
+              const isCurrent = item.key === selectedMetric;
+              const itemColor = colors[item.colorKey];
 
-          return (
-            <TouchableOpacity
+              return (
+            <PressableScale
               key={item.key}
-              activeOpacity={0.7}
+              scaleTo={0.985}
+              duration={150}
               onPress={() => onSelectMetric(item.key)}
               accessibilityRole="button"
+              accessibilityState={{ selected: isCurrent }}
               accessibilityLabel={`${item.label} weekly total ${formatNumber(item.total)} ${item.unit}, daily average ${formatNumber(item.dailyAverage)} ${item.unit}. Tap to show chart.`}
               style={[
                 styles.breakdownRow,
                 {
-                  paddingVertical: spacing.xs + 1,
-                  marginBottom: idx < summaries.length - 1 ? 2 : 0,
+                  minHeight: touchTarget.min,
+                  paddingHorizontal: spacing.xs,
+                  borderRadius: radius.sm,
+                  backgroundColor: isCurrent ? colors.surfaceAlt : 'transparent',
                 },
               ]}
             >
               <View style={styles.breakdownLeft}>
                 <MaterialCommunityIcons
                   name={item.icon}
-                  size={16}
+                  size={18}
                   color={itemColor}
                   style={{ marginRight: spacing.xs + 2 }}
                   accessibilityElementsHidden
@@ -328,7 +361,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 <AppText
                   variant="caption"
                   bold
-                  numberOfLines={1}
                   style={{ color: colors.text }}
                 >
                   {formatNumber(item.total)} {item.unit}
@@ -336,53 +368,54 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 <AppText
                   variant="caption"
                   color="textMuted"
-                  numberOfLines={1}
-                  style={{ marginLeft: 6 }}
+                  style={{ marginLeft: spacing.xs + 2 }}
                 >
                   · {formatNumber(item.dailyAverage)}/day
                 </AppText>
               </View>
-            </TouchableOpacity>
-          );
+            </PressableScale>
+      );
         })}
-      </View>
-    </AppCard>
+    </View>
+    </AppCard >
   );
 }
 
 const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'baseline',
     justifyContent: 'space-between',
   },
   tabsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
   },
-  tabButton: {
+  tabWrap: {
     flex: 1,
-    minHeight: 40,
+    minWidth: 88,
+  },
+  tabButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 6,
   },
   statsBanner: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
   },
   statCol: {
     flex: 1,
+    minWidth: 110,
   },
   statValueRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'baseline',
     marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
   },
   chartRow: {
     flexDirection: 'row',
@@ -401,7 +434,6 @@ const styles = StyleSheet.create({
   dayBadge: {
     width: 24,
     height: 24,
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -413,9 +445,10 @@ const styles = StyleSheet.create({
   },
   breakdownRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 28,
+    gap: 6,
   },
   breakdownLeft: {
     flexDirection: 'row',
@@ -423,8 +456,8 @@ const styles = StyleSheet.create({
   },
   breakdownRight: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     flexShrink: 1,
-    marginLeft: 8,
   },
 });

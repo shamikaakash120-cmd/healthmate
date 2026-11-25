@@ -20,3 +20,5 @@ export {
   showErrorToast,
 } from './Toast';
 export { default as FloatingActionButton } from './FloatingActionButton';
+export { default as PressableScale } from './PressableScale';
+export { default as FadeInView } from './FadeInView';

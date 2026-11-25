@@ -16,6 +16,8 @@ export const lightColors = {
   text: '#1F2D3D',          // Deep slate text - sharp yet gentle
   textMuted: '#6B7A8C',     // Muted slate for secondary labels & hints
   border: '#E2DFD8',        // Delicate warm border
+  overlay: 'rgba(15, 23, 32, 0.45)', // Modal backdrop scrim
+  shadow: '#1F2D3D',        // Soft card elevation shadow color
   error: '#D9534F',         // Soft warm red - helpful, not punishing
   errorBg: '#FDF2F2',       // Error notification soft background tint
   success: '#4CAF7D',       // Soft herbal green
@@ -39,10 +41,12 @@ export const darkColors = {
   surface: '#222D3B',       // Elevated dark slate surface
   surfaceAlt: '#2B3848',    // Lighter dark slate for inputs & inner wells
   primary: '#3EB4A5',       // Lightened soft teal for dark contrast
-  primaryText: '#FFFFFF',   // White text on primary buttons
+  primaryText: '#0F1A1C',   // High-contrast deep slate text on lightened dark-mode accents
   text: '#F3F5F7',          // Crisp light slate for primary readability
   textMuted: '#94A3B8',     // Muted slate for captions & metadata
   border: '#2F3E50',        // Subtle dark slate border
+  overlay: 'rgba(6, 10, 15, 0.65)', // Darker modal backdrop scrim in dark mode
+  shadow: '#000000',        // Dark mode elevation shadow color
   error: '#F08080',         // Soft light coral red
   errorBg: '#382426',       // Dark tinted error container
   success: '#5ECB91',       // Lightened herbal green
