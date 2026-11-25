@@ -89,3 +89,11 @@ This document details the architectural decisions, design patterns, and librarie
     - *Minimal Boilerplate:* Redux requires distinct definitions for action types, creators, slices, reducers, selectors, and thunk middleware. In Zustand, state properties and async actions live together inside a single intuitive factory.
     - *Bundle Size & Simplicity:* Redux and RTK add significant bundle weight (~12–15 kB minified). Zustand has an ultra-lightweight footprint (~1.1 kB) and zero external dependencies, perfect for a lean coursework mobile app where data storage is already governed by SQLite.
     - *Natural Fit for MVVM:* Zustand stores act as pure ViewModels: UI components simply subscribe to reactive store state and dispatch actions, while the store handles business logic, invokes domain validators, and orchestrates repository calls.
+
+## 12. Automated Testing Approach: `Jest` with `jest-expo`
+- **Decision:** Adopt `Jest` paired with the official `jest-expo` preset (`__tests__/` outside `app/`) focused on unit testing pure Model, Utility, and ViewModel derivation functions (`validateRecord`, `dateUtils`, `csv`, and Dashboard progress, comparison, encouragement, weekly, and streak logic).
+- **Justification:**
+  - **Expo Ecosystem Alignment:** `jest-expo` mirrors Metro's module resolution, Babel transforms, and React Native globals for SDK 58 without brittle manual Babel or environment configuration.
+  - **Router Safety:** Keeping test files inside a top-level `__tests__/` directory rather than under `app/` ensures Expo Router never treats test modules as navigable screen routes.
+  - **MVVM Testability Payoff:** Because validation, local calendar math, CSV serialization, daily goal ratios, encouragement messaging, weekly averages, and streak counting live in pure functions, tests run deterministically with Jest fake timers (`jest.setSystemTime`) without live SQLite connections or fragile UI snapshots.
+  - **Regression Evidence:** Provides repeatable automated verification via `npm test` covering boundary cases (blank fields, negatives, decimals, maximum limits, future dates, leap days, month rollovers, CSV quoting, empty weeks, and active vs. broken streaks).
