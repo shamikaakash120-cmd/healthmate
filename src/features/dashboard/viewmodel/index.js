@@ -3,7 +3,12 @@
  * @responsibility Barrel export for Dashboard ViewModel store, hook, and pure derivation helpers.
  */
 export {
-  deriveDashboardMetrics, deriveEncouragementMessage, deriveMetricComparison, useDashboardStore,
-  useDashboardViewModel
+  deriveDashboardMetrics,
+  deriveEncouragementMessage,
+  deriveMetricComparison,
+  deriveStreak,
+  deriveWeeklySummary,
+  useDashboardStore,
+  useDashboardViewModel,
 } from './useDashboardViewModel';
 

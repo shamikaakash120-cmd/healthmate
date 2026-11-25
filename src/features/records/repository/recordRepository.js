@@ -244,3 +244,26 @@ export async function getTotalsBetween(startDate, endDate) {
     );
   }
 }
+
+/**
+ * Retrieves distinct calendar dates (YYYY-MM-DD) having at least one health record
+ * on or before `upToDate`, ordered newest first for streak calculation.
+ *
+ * @param {string} upToDate - Upper-bound date (inclusive) in YYYY-MM-DD format.
+ * @returns {Promise<string[]>} Array of distinct YYYY-MM-DD strings sorted descending.
+ * @throws {Error} If the database query fails.
+ */
+export async function getDistinctRecordDates(upToDate) {
+  try {
+    const db = getDb();
+    const rows = await db.getAllAsync(
+      'SELECT DISTINCT date FROM health_records WHERE date <= ? ORDER BY date DESC;',
+      [upToDate]
+    );
+    return (rows || []).map((row) => row.date).filter(Boolean);
+  } catch (error) {
+    throw new Error(
+      `Failed to fetch distinct record dates up to "${upToDate}": ${error?.message || 'Database error'}`
+    );
+  }
+}

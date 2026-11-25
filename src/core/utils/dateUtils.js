@@ -188,3 +188,42 @@ export function getDaysBetween(isoA, isoB) {
   const msPerDay = 24 * 60 * 60 * 1000;
   return Math.abs(Math.round((b.getTime() - a.getTime()) / msPerDay));
 }
+
+const WEEKDAY_INITIALS = Object.freeze(['S', 'M', 'T', 'W', 'T', 'F', 'S']);
+const WEEKDAY_SHORT_NAMES = Object.freeze(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
+
+/**
+ * Shifts a YYYY-MM-DD local date string by a whole number of calendar days.
+ *
+ * @param {string} iso - Anchor date in YYYY-MM-DD format.
+ * @param {number} deltaDays - Signed day offset (e.g. -1 for yesterday).
+ * @returns {string} Shifted YYYY-MM-DD date string in local time, or input if invalid.
+ */
+export function shiftISODate(iso, deltaDays) {
+  if (!isValidISODate(iso)) return iso;
+  const date = parseISODate(iso);
+  date.setDate(date.getDate() + deltaDays);
+  return toISODate(date);
+}
+
+/**
+ * Returns the single-letter weekday initial (e.g. 'M', 'T', 'W') for a YYYY-MM-DD date.
+ *
+ * @param {string} iso - Date string in YYYY-MM-DD format.
+ * @returns {string} Single-letter weekday initial, or '' if invalid.
+ */
+export function getWeekdayInitial(iso) {
+  if (!isValidISODate(iso)) return '';
+  return WEEKDAY_INITIALS[parseISODate(iso).getDay()] || '';
+}
+
+/**
+ * Returns the short three-letter weekday name (e.g. 'Mon') for a YYYY-MM-DD date.
+ *
+ * @param {string} iso - Date string in YYYY-MM-DD format.
+ * @returns {string} Short weekday name, or '' if invalid.
+ */
+export function getWeekdayShort(iso) {
+  if (!isValidISODate(iso)) return '';
+  return WEEKDAY_SHORT_NAMES[parseISODate(iso).getDay()] || '';
+}
