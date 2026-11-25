@@ -3,35 +3,36 @@
  * @responsibility Modal form view for creating or editing health records with effortless input,
  *                quick-add chips, DateTimePicker integration, next-field focus, and inline validation.
  */
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  Modal,
-  KeyboardAvoidingView,
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  ScreenContainer,
-  AppText,
-  AppCard,
-  AppTextInput,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
   AppButton,
+  AppCard,
+  AppText,
+  AppTextInput,
   QuickChip,
+  ScreenContainer,
   showSuccessToast,
 } from '../../../core/components';
-import { useTheme, METRICS } from '../../../core/theme';
+import { METRICS, useTheme } from '../../../core/theme';
 import {
-  today,
-  toISODate,
-  parseISODate,
   formatDisplayDate,
   formatRelativeDay,
+  parseISODate,
+  today,
+  toISODate,
 } from '../../../core/utils/dateUtils';
+import { safeGoBack } from '../../../core/utils/navigation';
 import { useRecordsStore } from '../viewmodel';
 
 /**
@@ -122,7 +123,7 @@ export default function RecordFormScreen() {
 
     if (result.success) {
       showSuccessToast('Entry saved. Great work!');
-      router.back();
+      safeGoBack(router);
     } else if (result.errors) {
       setErrors(result.errors);
     }
@@ -153,7 +154,7 @@ export default function RecordFormScreen() {
             </AppText>
           </View>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => safeGoBack(router)}
             accessibilityLabel="Close form"
             accessibilityRole="button"
             style={[styles.closeButton, { backgroundColor: colors.surfaceAlt }]}
@@ -464,7 +465,7 @@ export default function RecordFormScreen() {
           <AppButton
             label="Cancel"
             variant="secondary"
-            onPress={() => router.back()}
+            onPress={() => safeGoBack(router)}
             accessibilityLabel="Cancel"
           />
         </AppCard>

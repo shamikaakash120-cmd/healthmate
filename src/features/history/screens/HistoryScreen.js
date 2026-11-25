@@ -25,7 +25,11 @@ import {
 import { useTheme } from '../../../core/theme';
 import { formatDisplayDate } from '../../../core/utils/dateUtils';
 import { selectFilteredRecords, useRecordsStore } from '../../records/viewmodel';
-import { ConfirmDeleteModal, HistoryRecordCard } from '../components';
+import {
+  ConfirmDeleteModal,
+  DateSearchBar,
+  HistoryRecordCard,
+} from '../components';
 
 /**
  * Historical health records screen.
@@ -38,15 +42,23 @@ export default function HistoryScreen() {
 
   // Store state & actions (primitive/stable selectors to avoid Zustand v5 snapshot loops)
   const recordsRaw = useRecordsStore((state) => state.records);
+  const searchDate = useRecordsStore((state) => state.searchDate);
   const isLoading = useRecordsStore((state) => state.isLoading);
   const error = useRecordsStore((state) => state.error);
   const loadRecords = useRecordsStore((state) => state.loadRecords);
   const removeRecord = useRecordsStore((state) => state.removeRecord);
+  const setSearchDate = useRecordsStore((state) => state.setSearchDate);
+  const clearSearch = useRecordsStore((state) => state.clearSearch);
 
-  // Enforce newest-first ordering cleanly via store selector
+  // Enforce newest-first ordering and active searchDate filtering via store selector
   const records = useMemo(
-    () => selectFilteredRecords({ records: recordsRaw, sortOrder: 'desc' }),
-    [recordsRaw]
+    () =>
+      selectFilteredRecords({
+        records: recordsRaw,
+        searchDate,
+        sortOrder: 'desc',
+      }),
+    [recordsRaw, searchDate]
   );
 
   // Local UI-only state
@@ -98,6 +110,17 @@ export default function HistoryScreen() {
     await loadRecords();
     setHasLoaded(true);
   }, [loadRecords]);
+
+  const handleSelectDate = useCallback(
+    async (isoDate) => {
+      await setSearchDate(isoDate);
+    },
+    [setSearchDate]
+  );
+
+  const handleClearFilter = useCallback(async () => {
+    await clearSearch();
+  }, [clearSearch]);
 
   const handleRequestDelete = useCallback((record) => {
     setRecordToDelete(record);
@@ -159,48 +182,67 @@ export default function HistoryScreen() {
     records.length === 1 ? '1 entry' : `${records.length} entries`;
 
   const listHeader = (
-    <View style={[styles.headerRow, { marginBottom: spacing.lg }]}>
-      <View style={styles.headerTextCol}>
-        <AppText variant="caption" color="textMuted">
-          Daily Activity Log
-        </AppText>
-        <AppText variant="title" bold style={{ marginTop: 2 }}>
-          History
-        </AppText>
-      </View>
-
-      {records.length > 0 && (
-        <View
-          style={[
-            styles.countPill,
-            {
-              backgroundColor: colors.surfaceAlt,
-              borderRadius: radius.pill,
-              paddingHorizontal: spacing.sm + 2,
-              paddingVertical: spacing.xs,
-            },
-          ]}
-          accessible
-          accessibilityLabel={`${countLabel} recorded`}
-        >
+    <View style={{ marginBottom: spacing.lg }}>
+      <View style={[styles.headerRow, { marginBottom: spacing.md }]}>
+        <View style={styles.headerTextCol}>
           <AppText variant="caption" color="textMuted">
-            {countLabel}
+            Daily Activity Log
+          </AppText>
+          <AppText variant="title" bold style={{ marginTop: 2 }}>
+            History
           </AppText>
         </View>
-      )}
+
+        {records.length > 0 && (
+          <View
+            style={[
+              styles.countPill,
+              {
+                backgroundColor: colors.surfaceAlt,
+                borderRadius: radius.pill,
+                paddingHorizontal: spacing.sm + 2,
+                paddingVertical: spacing.xs,
+              },
+            ]}
+            accessible
+            accessibilityLabel={`${countLabel} recorded`}
+          >
+            <AppText variant="caption" color="textMuted">
+              {countLabel}
+            </AppText>
+          </View>
+        )}
+      </View>
+
+      {/* ── Clean Date Search Bar & Active Filter Chip ── */}
+      <DateSearchBar
+        searchDate={searchDate}
+        onSelectDate={handleSelectDate}
+        onClear={handleClearFilter}
+      />
     </View>
   );
 
   const listEmpty = (
     <View style={styles.emptyWrap}>
       <AppCard noPad>
-        <EmptyState
-          iconName="calendar-blank-outline"
-          title="No entries yet. Tap + to log your first day."
-          hint="Your daily steps, calories burned, and hydration entries will appear here."
-          actionLabel="Add entry"
-          onAction={handleOpenAdd}
-        />
+        {searchDate ? (
+          <EmptyState
+            iconName="calendar-remove-outline"
+            title="No entries for this date"
+            hint={`No health records were logged on ${formatDisplayDate(searchDate)}.`}
+            actionLabel="Clear filter"
+            onAction={handleClearFilter}
+          />
+        ) : (
+          <EmptyState
+            iconName="calendar-blank-outline"
+            title="No entries yet. Tap + to log your first day."
+            hint="Your daily steps, calories burned, and hydration entries will appear here."
+            actionLabel="Add entry"
+            onAction={handleOpenAdd}
+          />
+        )}
       </AppCard>
     </View>
   );

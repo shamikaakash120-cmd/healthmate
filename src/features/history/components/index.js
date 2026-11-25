@@ -4,3 +4,4 @@
  */
 export { default as HistoryRecordCard } from './HistoryRecordCard';
 export { default as ConfirmDeleteModal } from './ConfirmDeleteModal';
+export { default as DateSearchBar } from './DateSearchBar';

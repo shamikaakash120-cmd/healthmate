@@ -306,16 +306,27 @@ export const useRecordsStore = create((set, get) => ({
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
 /**
- * Selector that returns records ordered according to the active `sortOrder`.
+ * Selector that filters records by active `searchDate` (or `rangeStart`/`rangeEnd`)
+ * and returns them ordered according to `sortOrder`.
  *
- * @param {object} state Store state.
- * @returns {Array<object>} Sorted records array.
+ * @param {object} state Store state (or derived slice `{ records, searchDate, rangeStart, rangeEnd, sortOrder }`).
+ * @returns {Array<object>} Filtered and sorted records array.
  */
 export function selectFilteredRecords(state) {
-  const { records, sortOrder } = state;
+  const { records, searchDate, rangeStart, rangeEnd, sortOrder } = state;
   if (!records || records.length === 0) return [];
 
-  return [...records].sort((a, b) => {
+  const filtered = records.filter((item) => {
+    if (searchDate) {
+      return item.date === searchDate;
+    }
+    if (rangeStart && rangeEnd) {
+      return item.date >= rangeStart && item.date <= rangeEnd;
+    }
+    return true;
+  });
+
+  return [...filtered].sort((a, b) => {
     if (a.date !== b.date) {
       return sortOrder === 'asc'
         ? a.date.localeCompare(b.date)
