@@ -1,12 +1,9 @@
 /**
  * @layer ViewModel (Dashboard)
- * @responsibility Zustand store aggregating daily metrics, progress calculation, and state for dashboard.
+ * @responsibility Barrel export for Dashboard ViewModel store, hook, and pure derivation helpers.
  */
+export {
+  deriveDashboardMetrics, deriveEncouragementMessage, deriveMetricComparison, useDashboardStore,
+  useDashboardViewModel
+} from './useDashboardViewModel';
 
-/**
- * Placeholder view model hook for the dashboard.
- * @returns {object} Dashboard state and action handlers.
- */
-export function useDashboardViewModelPlaceholder() {
-  return {};
-}

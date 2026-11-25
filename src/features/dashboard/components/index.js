@@ -1,12 +1,6 @@
 /**
  * @layer Presentation (Dashboard Components)
- * @responsibility UI components specific to the dashboard (e.g. progress rings, metric summary tiles).
+ * @responsibility Barrel export for UI components specific to the dashboard feature.
  */
+export { default as HeroProgressCard } from './HeroProgressCard';
 
-/**
- * Placeholder for dashboard components.
- * @returns {null} Empty placeholder.
- */
-export function DashboardComponentsPlaceholder() {
-  return null;
-}

@@ -1,148 +1,201 @@
 /**
  * @layer Presentation (Dashboard Screen)
- * @responsibility Pure UI view displaying today's health metrics summary and activity overview.
+ * @responsibility Pure UI screen rendering today's greeting, Hero ProgressRings card,
+ *                daily MetricCards with neutral "vs yesterday" comparisons,
+ *                encouraging progress messages, empty/loading/error states,
+ *                pull-to-refresh, focus-triggered refresh, and add-entry FAB.
  */
-import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useCallback } from 'react';
+import { RefreshControl, StyleSheet, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import {
-  ScreenContainer,
   AppText,
-  AppCard,
-  MetricCard,
-  ProgressRing,
+  ErrorState,
   FloatingActionButton,
+  LoadingState,
+  MetricCard,
+  ScreenContainer,
 } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
-import { greetingForTime } from '../../../core/utils/formatters';
-import { formatDisplayDate, today } from '../../../core/utils/dateUtils';
-import { useRecordsStore } from '../../records/viewmodel';
+import { HeroProgressCard } from '../components';
+import { useDashboardViewModel } from '../viewmodel';
 
 /**
- * Main dashboard screen component.
+ * Main Dashboard (Home) screen.
+ * Strictly presentation-only: all progress and messaging logic resides in `useDashboardViewModel`.
+ *
  * @returns {React.JSX.Element} Dashboard screen interface.
  */
 export default function DashboardScreen() {
   const router = useRouter();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
 
-  const todayTotals = useRecordsStore((state) => state.todayTotals);
-  const loadTodayTotals = useRecordsStore((state) => state.loadTodayTotals);
-  const loadRecords = useRecordsStore((state) => state.loadRecords);
+  const {
+    greeting,
+    displayDate,
+    todayEntryCount,
+    hasEntriesToday,
+    metrics,
+    overallPercent,
+    encouragement,
+    isInitialLoading,
+    isRefreshing,
+    error,
+    loadOnFocus,
+    onRefresh,
+    retry,
+  } = useDashboardViewModel();
 
-  useEffect(() => {
-    loadTodayTotals();
-    loadRecords();
-  }, []);
+  // Refresh dashboard summary whenever the screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadOnFocus();
+    }, [loadOnFocus])
+  );
 
-  const todayStr = today();
-  const displayDate = formatDisplayDate(todayStr);
-  const greeting = greetingForTime();
+  const handleOpenAddForm = useCallback(() => {
+    router.push('/record-form');
+  }, [router]);
+
+  // ── Loading State ──────────────────────────────────────────────────────────
+  if (isInitialLoading) {
+    return (
+      <ScreenContainer padded={false}>
+        <LoadingState label="Loading your daily summary…" />
+      </ScreenContainer>
+    );
+  }
+
+  // ── Error State ────────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <ScreenContainer padded={false}>
+        <ErrorState message={error} onRetry={retry} />
+      </ScreenContainer>
+    );
+  }
+
+  const entryCountLabel =
+    todayEntryCount === 1 ? '1 entry today' : `${todayEntryCount} entries today`;
 
   return (
-    <ScreenContainer scroll padded>
-        {/* ── Screen Header ── */}
-        <View style={[styles.header, { marginBottom: spacing.lg }]}>
-          <AppText variant="caption" color="textMuted">
-            {displayDate}
-          </AppText>
-          <AppText variant="title" bold style={{ marginTop: 2 }}>
-            {greeting} 🌿
-          </AppText>
-        </View>
-
-        {/* ── Today's Glanceable Goal Rings ── */}
-        <AppCard style={{ marginBottom: spacing.lg }}>
-          <AppText variant="heading" bold style={{ marginBottom: spacing.md }}>
-            Today's Progress
-          </AppText>
-          <View style={styles.ringsRow}>
-            <View style={styles.ringCol}>
-              <ProgressRing
-                metricKey="steps"
-                value={todayTotals.steps}
-                goal={10000}
-                size={96}
-                strokeWidth={8}
+        <View style={[styles.root, { backgroundColor: colors.background }]}>
+          <ScreenContainer
+            scroll
+            padded
+            contentContainerStyle={{ paddingBottom: spacing.xxxl * 2 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.primary}
+                colors={[colors.primary]}
               />
-            <AppText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
-              Steps
-            </AppText>
-          </View>
-          <View style={styles.ringCol}>
-            <ProgressRing
-              metricKey="calories"
-              value={todayTotals.calories}
-              goal={500}
-              size={96}
-              strokeWidth={8}
-            />
-            <AppText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
-              Calories
-            </AppText>
-          </View>
-          <View style={styles.ringCol}>
-            <ProgressRing
-              metricKey="water"
-              value={todayTotals.water}
-              goal={2000}
-              size={96}
-              strokeWidth={8}
-            />
-            <AppText variant="caption" color="textMuted" style={{ marginTop: spacing.xs }}>
-              Water
-            </AppText>
-          </View>
-        </View>
-      </AppCard>
+            }
+          >
+            {/* ── Header: Date & Time-Based Greeting ── */}
+            <View style={[styles.headerRow, { marginBottom: spacing.lg }]}>
+              <View style={styles.headerTextCol}>
+                <AppText
+                  variant="caption"
+                  color="textMuted"
+                  accessibilityLabel={`Today is ${displayDate}`}
+                >
+                  {displayDate}
+                </AppText>
+                <AppText variant="title" bold style={{ marginTop: 2 }}>
+                  {greeting}
+                </AppText>
+              </View>
 
-      {/* ── Metric Summary Cards ── */}
-      <AppText variant="heading" bold style={{ marginBottom: spacing.sm }}>
-        Daily Totals
-      </AppText>
-      <View style={[styles.metricsRow, { marginBottom: spacing.xl }]}>
-        <MetricCard
-          metricKey="steps"
-          value={todayTotals.steps}
-          style={{ flex: 1, marginRight: spacing.sm }}
-        />
-        <MetricCard
-          metricKey="calories"
-          value={todayTotals.calories}
-          style={{ flex: 1, marginRight: spacing.sm }}
-        />
-        <MetricCard
-          metricKey="water"
-          value={todayTotals.water}
-          style={{ flex: 1 }}
-        />
+              {hasEntriesToday && (
+                <View
+                  style={[
+                    styles.entryPill,
+                    {
+                      backgroundColor: colors.surfaceAlt,
+                      borderRadius: radius.pill,
+                      paddingHorizontal: spacing.sm + 2,
+                      paddingVertical: spacing.xs,
+                    },
+                  ]}
+                  accessible
+                  accessibilityLabel={entryCountLabel}
+                >
+                  <AppText variant="caption" color="textMuted">
+                    {entryCountLabel}
+                  </AppText>
+                </View>
+              )}
+            </View>
+
+            {/* ── Hero Card: Progress Rings + Encouraging Message ── */}
+            <HeroProgressCard
+              metrics={metrics}
+              overallPercent={overallPercent}
+              encouragement={encouragement}
+              hasEntriesToday={hasEntriesToday}
+              onLogPress={handleOpenAddForm}
+            />
+
+            {/* ── Daily Totals Section Header ── */}
+            <View style={[styles.sectionHeaderRow, { marginBottom: spacing.sm }]}>
+              <AppText variant="heading" bold>
+                Today's Totals
+              </AppText>
+              <AppText variant="caption" color="textMuted">
+                vs yesterday
+              </AppText>
+            </View>
+
+                    {/* ── Three Stacked Metric Cards ── */}
+        <View style={styles.metricsStack}>
+                    {metrics.map((item) => (
+            <MetricCard
+              key={item.key}
+              metricKey={item.key}
+              value={item.todayValue}
+              layout="horizontal"
+              comparison={item.comparison}
+              style={{ marginBottom: spacing.sm }}
+            />
+          ))}
+                </View>
+          </ScreenContainer>
+
+          {/* ── Fixed Bottom-Right Floating Action Button ── */}
+          <FloatingActionButton
+            iconName="plus"
+            onPress={handleOpenAddForm}
+            accessibilityLabel="Add new health entry"
+          />
       </View>
-
-      {/* ── Floating Action Button (Add Entry) ── */}
-      <FloatingActionButton
-        iconName="plus"
-        onPress={() => router.push('/record-form')}
-        accessibilityLabel="Add new health record"
-      />
-    </ScreenContainer>
-  );
+      );
 }
 
-    const styles = StyleSheet.create({
-      header: {
+      const styles = StyleSheet.create({
+        root: {
+        flex: 1,
+  },
+      headerRow: {
         paddingTop: 8,
-      },
-        ringsRow: {
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          paddingVertical: 4,
-        },
-          ringCol: {
-            alignItems: 'center',
-          },
-            metricsRow: {
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            },
-          });
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      gap: 12,
+  },
+      headerTextCol: {
+        flex: 1,
+  },
+      entryPill: {
+        alignSelf: 'center',
+  },
+      sectionHeaderRow: {
+        flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+  },
+      metricsStack: {
+        width: '100%',
+  },
+});

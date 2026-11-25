@@ -20,6 +20,7 @@ import { useTheme } from '../theme';
  * @param {boolean} [props.padded=true] Apply horizontal+vertical padding from spacing.lg.
  * @param {object} [props.style] Additional styles for the inner container.
  * @param {object} [props.contentContainerStyle] Additional styles for ScrollView content.
+ * @param {React.ReactElement} [props.refreshControl] Optional RefreshControl for pull-to-refresh when scroll is true.
  * @returns {React.JSX.Element}
  */
 export default function ScreenContainer({
@@ -28,6 +29,7 @@ export default function ScreenContainer({
   padded = true,
   style,
   contentContainerStyle,
+  refreshControl,
 }) {
   const { colors, spacing, isDark } = useTheme();
 
@@ -47,6 +49,7 @@ export default function ScreenContainer({
           contentContainerStyle={[paddingStyle, { paddingBottom: spacing.xxxl }, contentContainerStyle]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>

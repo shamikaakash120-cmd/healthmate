@@ -101,31 +101,42 @@ export default function ProgressRing({
       </Svg>
 
       {showCentreText && (
-        <View style={styles.centreText} pointerEvents="none">
-          <AppText
-            variant="heading"
-            bold
-            style={{ color: metricColor, lineHeight: 24 }}
+          <View
+            style={[
+              styles.centreText,
+              { maxWidth: Math.max(0, size - strokeWidth * 2 - 8) },
+            ]}
+            pointerEvents="none"
           >
-            {displayValue}
-          </AppText>
-          <AppText variant="caption" color="textMuted">
-            {config.unit}
-          </AppText>
-        </View>
+            <AppText
+              variant={size >= 100 ? 'title' : 'heading'}
+              bold
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              style={{
+                color: metricColor,
+                lineHeight: size >= 100 ? 26 : 22,
+              }}
+            >
+              {displayValue}
+            </AppText>
+              <AppText variant="caption" color="textMuted" numberOfLines={1}>
+                {config.unit}
+              </AppText>
+          </View>
       )}
-    </View>
-  );
+        </View>
+      );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+      const styles = StyleSheet.create({
+        container: {
+        alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
   },
-  centreText: {
-    alignItems: 'center',
-    justifyContent: 'center',
+      centreText: {
+        alignItems: 'center',
+      justifyContent: 'center',
   },
 });
