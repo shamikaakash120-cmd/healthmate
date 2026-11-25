@@ -74,69 +74,75 @@ export default function ProgressRing({
       accessibilityRole="progressbar"
       accessibilityValue={{ min: 0, max: goal, now: value }}
     >
-      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
-        {/* Track ring */}
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={trackColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        {/* Progress ring */}
-        <AnimatedCircle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={metricColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          rotation="-90"
-          origin={`${size / 2}, ${size / 2}`}
-        />
-      </Svg>
+      {/* Rotate container -90deg so arc begins at 12 o'clock without using SVG `origin` prop (avoids React 19 web `transform-origin` warning) */}
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { transform: [{ rotate: '-90deg' }] },
+        ]}
+      >
+        <Svg width={size} height={size}>
+          {/* Track ring */}
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={trackColor}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          {/* Progress ring */}
+          <AnimatedCircle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={metricColor}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </View>
 
       {showCentreText && (
-          <View
-            style={[
-              styles.centreText,
-              { maxWidth: Math.max(0, size - strokeWidth * 2 - 8) },
-            ]}
-            pointerEvents="none"
+        <View
+          style={[
+            styles.centreText,
+            { maxWidth: Math.max(0, size - strokeWidth * 2 - 8) },
+          ]}
+          pointerEvents="none"
+        >
+          <AppText
+            variant={size >= 100 ? 'title' : 'heading'}
+            bold
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={{
+              color: metricColor,
+              lineHeight: size >= 100 ? 26 : 22,
+            }}
           >
-            <AppText
-              variant={size >= 100 ? 'title' : 'heading'}
-              bold
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              style={{
-                color: metricColor,
-                lineHeight: size >= 100 ? 26 : 22,
-              }}
-            >
-              {displayValue}
-            </AppText>
-              <AppText variant="caption" color="textMuted" numberOfLines={1}>
-                {config.unit}
-              </AppText>
-          </View>
-      )}
+            {displayValue}
+          </AppText>
+          <AppText variant="caption" color="textMuted" numberOfLines={1}>
+            {config.unit}
+          </AppText>
         </View>
-      );
+      )}
+    </View>
+  );
 }
 
-      const styles = StyleSheet.create({
-        container: {
-        alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-      centreText: {
-        alignItems: 'center',
-      justifyContent: 'center',
+  centreText: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

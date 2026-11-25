@@ -12,6 +12,7 @@
  * converts and validates them safely. No UI code. No DB code.
  */
 
+import { isFutureDate, isValidISODate, today } from '../../../core/utils/dateUtils';
 
 // ─── Limits (single source of truth for validation) ───────────────────────────
 
