@@ -30,6 +30,7 @@ import {
  * @param {string|null} props.searchDate Active ISO date filter (YYYY-MM-DD), or null.
  * @param {(isoDate: string) => void} props.onSelectDate Callback when a date is chosen.
  * @param {() => void} props.onClear Callback when the active filter chip is cleared.
+ * @param {boolean} [props.showChip=true] Whether to render the active filter chip below the bar.
  * @param {object} [props.style] Optional outer container style overrides.
  * @returns {React.JSX.Element}
  */
@@ -37,6 +38,7 @@ export default function DateSearchBar({
   searchDate,
   onSelectDate,
   onClear,
+  showChip = true,
   style,
 }) {
   const { colors, spacing, radius, shadow } = useTheme();
@@ -137,7 +139,7 @@ export default function DateSearchBar({
       </TouchableOpacity>
 
       {/* ── Active Filter Chip ── */}
-      {formattedSelected && (
+      {showChip && formattedSelected && (
         <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
           <View
             style={[

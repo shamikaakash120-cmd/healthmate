@@ -27,8 +27,10 @@ import { formatDisplayDate } from '../../../core/utils/dateUtils';
 import { selectFilteredRecords, useRecordsStore } from '../../records/viewmodel';
 import {
   ConfirmDeleteModal,
-  DateSearchBar,
+  DateRangeModal,
   HistoryRecordCard,
+  HistoryToolbar,
+  SortMenuModal,
 } from '../components';
 
 /**
@@ -43,22 +45,31 @@ export default function HistoryScreen() {
   // Store state & actions (primitive/stable selectors to avoid Zustand v5 snapshot loops)
   const recordsRaw = useRecordsStore((state) => state.records);
   const searchDate = useRecordsStore((state) => state.searchDate);
+  const rangeStart = useRecordsStore((state) => state.rangeStart);
+  const rangeEnd = useRecordsStore((state) => state.rangeEnd);
+  const sortOrder = useRecordsStore((state) => state.sortOrder);
+  const isExporting = useRecordsStore((state) => state.isExporting);
   const isLoading = useRecordsStore((state) => state.isLoading);
   const error = useRecordsStore((state) => state.error);
   const loadRecords = useRecordsStore((state) => state.loadRecords);
   const removeRecord = useRecordsStore((state) => state.removeRecord);
   const setSearchDate = useRecordsStore((state) => state.setSearchDate);
+  const setDateRange = useRecordsStore((state) => state.setDateRange);
+  const setSortOrder = useRecordsStore((state) => state.setSortOrder);
   const clearSearch = useRecordsStore((state) => state.clearSearch);
+  const exportCsv = useRecordsStore((state) => state.exportCsv);
 
-  // Enforce newest-first ordering and active searchDate filtering via store selector
+  // Apply active date/range filters and selected sort mode via store selector
   const records = useMemo(
     () =>
       selectFilteredRecords({
         records: recordsRaw,
         searchDate,
-        sortOrder: 'desc',
+        rangeStart,
+        rangeEnd,
+        sortOrder,
       }),
-    [recordsRaw, searchDate]
+    [recordsRaw, searchDate, rangeStart, rangeEnd, sortOrder]
   );
 
   // Local UI-only state
@@ -66,6 +77,8 @@ export default function HistoryScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showRangeModal, setShowRangeModal] = useState(false);
+  const [showSortMenu, setShowSortMenu] = useState(false);
 
   // Refresh records whenever the History tab gains focus
   useFocusEffect(
@@ -121,6 +134,28 @@ export default function HistoryScreen() {
   const handleClearFilter = useCallback(async () => {
     await clearSearch();
   }, [clearSearch]);
+
+  const handleApplyRange = useCallback(
+    async (start, end) => await setDateRange(start, end),
+    [setDateRange]
+  );
+
+  const handleSelectSort = useCallback(
+    (order) => {
+      setSortOrder(order);
+    },
+    [setSortOrder]
+  );
+
+  const handleExportCsv = useCallback(async () => {
+    const result = await exportCsv();
+    if (result.success) {
+      const noun = result.count === 1 ? 'record' : 'records';
+      showSuccessToast(`Exported ${result.count} ${noun} to CSV.`);
+    } else if (result.message) {
+      showErrorToast(result.message);
+    }
+  }, [exportCsv]);
 
   const handleRequestDelete = useCallback((record) => {
     setRecordToDelete(record);
@@ -214,14 +249,23 @@ export default function HistoryScreen() {
         )}
       </View>
 
-      {/* ── Clean Date Search Bar & Active Filter Chip ── */}
-      <DateSearchBar
+      {/* ── Filter, Range, Sort, and CSV Export Toolbar ── */}
+      <HistoryToolbar
         searchDate={searchDate}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        sortOrder={sortOrder}
+        isExporting={isExporting}
         onSelectDate={handleSelectDate}
-        onClear={handleClearFilter}
+        onOpenRange={() => setShowRangeModal(true)}
+        onOpenSort={() => setShowSortMenu(true)}
+        onExportCsv={handleExportCsv}
+        onClearFilter={handleClearFilter}
       />
     </View>
   );
+
+  const hasRangeFilter = Boolean(rangeStart && rangeEnd);
 
   const listEmpty = (
     <View style={styles.emptyWrap}>
@@ -231,6 +275,14 @@ export default function HistoryScreen() {
             iconName="calendar-remove-outline"
             title="No entries for this date"
             hint={`No health records were logged on ${formatDisplayDate(searchDate)}.`}
+            actionLabel="Clear filter"
+            onAction={handleClearFilter}
+          />
+        ) : hasRangeFilter ? (
+          <EmptyState
+            iconName="calendar-remove-outline"
+            title="No entries in this date range"
+            hint={`No health records were logged between ${formatDisplayDate(rangeStart)} and ${formatDisplayDate(rangeEnd)}.`}
             actionLabel="Clear filter"
             onAction={handleClearFilter}
           />
@@ -289,6 +341,24 @@ export default function HistoryScreen() {
         isDeleting={isDeleting}
         onCancel={handleCancelDelete}
         onConfirm={handleConfirmDelete}
+      />
+
+      {/* ── Date Range Filter Modal ── */}
+      <DateRangeModal
+        visible={showRangeModal}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        onApply={handleApplyRange}
+        onClear={handleClearFilter}
+        onClose={() => setShowRangeModal(false)}
+      />
+
+      {/* ── Sort Menu Modal ── */}
+      <SortMenuModal
+        visible={showSortMenu}
+        sortOrder={sortOrder}
+        onSelect={handleSelectSort}
+        onClose={() => setShowSortMenu(false)}
       />
     </View>
   );

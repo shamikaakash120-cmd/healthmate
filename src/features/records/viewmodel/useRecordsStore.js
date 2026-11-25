@@ -9,7 +9,10 @@
  *   - Guard against duplicate rapid submits (concurrent calls ignored while a save is in progress).
  *   - Automatically refreshes records and daily totals after mutations.
  */
+import { Platform } from 'react-native';
 import { create } from 'zustand';
+import { File, Paths } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { validateRecord, toHealthRecord } from '../model';
 import {
   createRecord,
@@ -21,7 +24,66 @@ import {
   deleteRecord,
   getTotalsForDate,
 } from '../repository';
-import { getLastNDates } from '../../../core/utils/dateUtils';
+import { recordsToCsv } from '../../../core/utils/csv';
+import {
+  getLastNDates,
+  isFutureDate,
+  isValidISODate,
+  today,
+} from '../../../core/utils/dateUtils';
+
+/**
+ * Supported History sort modes rendered in the sort menu.
+ */
+export const SORT_OPTIONS = Object.freeze([
+  { key: 'newest', label: 'Newest first', shortLabel: 'Newest', icon: 'sort-calendar-descending' },
+  { key: 'oldest', label: 'Oldest first', shortLabel: 'Oldest', icon: 'sort-calendar-ascending' },
+  { key: 'most_steps', label: 'Most steps', shortLabel: 'Most steps', icon: 'walk' },
+  { key: 'most_water', label: 'Most water', shortLabel: 'Most water', icon: 'water' },
+]);
+
+const VALID_SORT_KEYS = new Set(SORT_OPTIONS.map((opt) => opt.key));
+
+/**
+ * Normalizes legacy ('desc'/'asc') and current sort option keys.
+ * @param {string} sortKey
+ * @returns {'newest'|'oldest'|'most_steps'|'most_water'}
+ */
+export function normalizeSortOrder(sortKey) {
+  if (sortKey === 'asc') return 'oldest';
+  if (sortKey === 'desc') return 'newest';
+  return VALID_SORT_KEYS.has(sortKey) ? sortKey : 'newest';
+}
+
+/**
+ * Validates a From / To date range ensuring valid local dates, not in the future,
+ * and `startDate <= endDate`.
+ *
+ * @param {string} startDate Lower-bound ISO date (YYYY-MM-DD).
+ * @param {string} endDate Upper-bound ISO date (YYYY-MM-DD).
+ * @returns {{ valid: boolean, error: string | null }} Validation result.
+ */
+export function validateDateRange(startDate, endDate) {
+  if (!isValidISODate(startDate) || !isValidISODate(endDate)) {
+    return {
+      valid: false,
+      error: 'Please select valid From and To calendar dates.',
+    };
+  }
+  if (isFutureDate(startDate) || isFutureDate(endDate)) {
+    return {
+      valid: false,
+      error: 'Date range cannot extend into the future.',
+    };
+  }
+  if (startDate > endDate) {
+    return {
+      valid: false,
+      error: 'From date must be on or before To date.',
+    };
+  }
+  return { valid: true, error: null };
+}
 
 /**
  * Empty metric totals baseline.
@@ -51,8 +113,11 @@ export const useRecordsStore = create((set, get) => ({
   /** @type {string|null} Range end filter (YYYY-MM-DD), or null */
   rangeEnd: null,
 
-  /** @type {'desc'|'asc'} Chronological sorting order */
-  sortOrder: 'desc',
+  /** @type {'newest'|'oldest'|'most_steps'|'most_water'} Sorting mode */
+  sortOrder: 'newest',
+
+  /** @type {boolean} True while generating and sharing a CSV export */
+  isExporting: false,
 
   /** @type {{ steps: number, calories: number, water: number }} Aggregated totals for today */
   todayTotals: { ...ZERO_TOTALS },
@@ -238,15 +303,21 @@ export const useRecordsStore = create((set, get) => ({
   },
 
   /**
-   * Sets date range filter [start, end] and reloads records.
+   * Validates and sets date range filter [start, end] and reloads records.
    *
    * @param {string} start YYYY-MM-DD start date.
    * @param {string} end YYYY-MM-DD end date.
-   * @returns {Promise<void>}
+   * @returns {Promise<{ success: boolean, error: string | null }>}
    */
   setDateRange: async (start, end) => {
+    const validation = validateDateRange(start, end);
+    if (!validation.valid) {
+      return { success: false, error: validation.error };
+    }
+
     set({ rangeStart: start, rangeEnd: end, searchDate: null });
     await get().loadRecords();
+    return { success: true, error: null };
   },
 
   /**
@@ -260,13 +331,85 @@ export const useRecordsStore = create((set, get) => ({
   },
 
   /**
-   * Toggles or updates the chronological sorting order.
+   * Updates the active sorting mode.
    *
-   * @param {'desc'|'asc'} [order] Optional explicit sort order.
+   * @param {'newest'|'oldest'|'most_steps'|'most_water'|'desc'|'asc'} order Sort option key.
    */
   setSortOrder: (order) => {
-    const nextOrder = order || (get().sortOrder === 'desc' ? 'asc' : 'desc');
-    set({ sortOrder: nextOrder });
+    set({ sortOrder: normalizeSortOrder(order) });
+  },
+
+  /**
+   * Generates a CSV of the currently displayed (filtered and sorted) records,
+   * saves it to cache (or triggers download on web), and opens the system share sheet.
+   *
+   * @returns {Promise<{ success: boolean, empty?: boolean, count?: number, message?: string }>}
+   */
+  exportCsv: async () => {
+    if (get().isExporting) {
+      return { success: false, message: 'Export is already in progress.' };
+    }
+
+    const visibleRecords = selectFilteredRecords(get());
+    if (visibleRecords.length === 0) {
+      return {
+        success: false,
+        empty: true,
+        message: 'Nothing to export. Adjust your filters or add an entry first.',
+      };
+    }
+
+    set({ isExporting: true });
+    try {
+      const csvContent = recordsToCsv(visibleRecords);
+      const filename = `healthmate-records-${today()}.csv`;
+
+      if (Platform.OS === 'web') {
+        if (typeof document !== 'undefined' && typeof Blob !== 'undefined') {
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          return { success: true, count: visibleRecords.length };
+        }
+        return {
+          success: false,
+          message: 'CSV download is unavailable in this browser environment.',
+        };
+      }
+
+      const cacheFile = new File(Paths.cache, filename);
+      cacheFile.create({ intermediates: true, overwrite: true });
+      await cacheFile.write(csvContent);
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (!canShare) {
+        return {
+          success: false,
+          message: 'Sharing is not available on this device.',
+        };
+      }
+
+      await Sharing.shareAsync(cacheFile.uri, {
+        mimeType: 'text/csv',
+        dialogTitle: 'Export HealthMate Records',
+        UTI: 'public.comma-separated-values-text',
+      });
+
+      return { success: true, count: visibleRecords.length };
+    } catch (err) {
+      return {
+        success: false,
+        message: err?.message || 'Could not export CSV. Please try again.',
+      };
+    } finally {
+      set({ isExporting: false });
+    }
   },
 
   /**
@@ -306,6 +449,22 @@ export const useRecordsStore = create((set, get) => ({
 // ─── Selectors ────────────────────────────────────────────────────────────────
 
 /**
+ * Compares two records chronologically (newest or oldest first), breaking ties by ID.
+ * @param {object} a
+ * @param {object} b
+ * @param {boolean} ascending
+ * @returns {number}
+ */
+function compareByDate(a, b, ascending) {
+  if (a.date !== b.date) {
+    return ascending
+      ? a.date.localeCompare(b.date)
+      : b.date.localeCompare(a.date);
+  }
+  return ascending ? a.id - b.id : b.id - a.id;
+}
+
+/**
  * Selector that filters records by active `searchDate` (or `rangeStart`/`rangeEnd`)
  * and returns them ordered according to `sortOrder`.
  *
@@ -326,12 +485,19 @@ export function selectFilteredRecords(state) {
     return true;
   });
 
+  const normalizedSort = normalizeSortOrder(sortOrder);
   return [...filtered].sort((a, b) => {
-    if (a.date !== b.date) {
-      return sortOrder === 'asc'
-        ? a.date.localeCompare(b.date)
-        : b.date.localeCompare(a.date);
+    if (normalizedSort === 'oldest') {
+      return compareByDate(a, b, true);
     }
-    return sortOrder === 'asc' ? a.id - b.id : b.id - a.id;
+    if (normalizedSort === 'most_steps') {
+      if (b.steps !== a.steps) return b.steps - a.steps;
+      return compareByDate(a, b, false);
+    }
+    if (normalizedSort === 'most_water') {
+      if (b.water !== a.water) return b.water - a.water;
+      return compareByDate(a, b, false);
+    }
+    return compareByDate(a, b, false);
   });
 }
