@@ -8,6 +8,7 @@ import { Stack } from 'expo-router';
 import { initDatabase, seedDatabase } from '../src/core/database';
 import { LoadingState, ErrorState, Toast } from '../src/core/components';
 import { useTheme } from '../src/core/theme';
+import { useSettingsStore } from '../src/features/settings/viewmodel';
 
 /* 
 @returns {React.JSX.Element} 
@@ -18,12 +19,13 @@ export default function RootLayout() {
   const [isDbReady, setIsDbReady] = useState(false);
   const [dbError, setDbError] = useState(null);
 
-  // Initializes the SQLite database and populates initial seed data if empty.
+  // Initializes the SQLite database, seeds initial data if empty, and loads persisted settings.
   async function setup() {
     try {
       setDbError(null);
       await initDatabase();
       await seedDatabase();
+      await useSettingsStore.getState().loadSettings();
       setIsDbReady(true);
     } catch (err) {
       setDbError(err?.message || 'Could not connect to the local database.');
@@ -52,36 +54,41 @@ export default function RootLayout() {
   }
 
   return (
-    <View style={styles.container}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        {/* Main bottom tabs group */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* Modal form for adding or editing health records */}
-        <Stack.Screen
-          name="record-form"
-          options={{
-            presentation: 'modal',
-            headerShown: false,
-          }}
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar
+          barStyle={isDark ? 'light-content' : 'dark-content'}
+          backgroundColor={colors.background}
         />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.background },
+          }}
+        >
+          {/* Main bottom tabs group */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-        {/* Developer testing & CRUD diagnostics screen */}
-        <Stack.Screen name="dev-gallery" options={{ headerShown: false }} />
-      </Stack>
+          {/* Modal form for adding or editing health records */}
+          <Stack.Screen
+            name="record-form"
+            options={{
+              presentation: 'modal',
+              headerShown: false,
+            }}
+          />
 
-      {/* Global snackbar / toast notifications */}
-      <Toast />
-    </View>
-  );
+          {/* Developer testing & CRUD diagnostics screen */}
+          <Stack.Screen name="dev-gallery" options={{ headerShown: false }} />
+        </Stack>
+
+        {/* Global snackbar / toast notifications */}
+        <Toast />
+      </View>
+      );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+      const styles = StyleSheet.create({
+        container: {
+        flex: 1,
   },
 });

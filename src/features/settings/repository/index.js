@@ -1,12 +1,6 @@
 /**
  * @layer Repository (Settings)
- * @responsibility Persistence operations for user preferences, daily targets, and seed/reset actions.
+ * @responsibility Barrel export for parameterized SQLite settings repository operations.
  */
+export * from './settingsRepository';
 
-/**
- * Placeholder repository for settings and target preferences.
- * @returns {object} Settings repository methods.
- */
-export function getSettingsRepositoryPlaceholder() {
-  return {};
-}
