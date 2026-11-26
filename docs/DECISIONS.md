@@ -97,3 +97,21 @@ This document details the architectural decisions, design patterns, and librarie
   - **Router Safety:** Keeping test files inside a top-level `__tests__/` directory rather than under `app/` ensures Expo Router never treats test modules as navigable screen routes.
   - **MVVM Testability Payoff:** Because validation, local calendar math, CSV serialization, daily goal ratios, encouragement messaging, weekly averages, and streak counting live in pure functions, tests run deterministically with Jest fake timers (`jest.setSystemTime`) without live SQLite connections or fragile UI snapshots.
   - **Regression Evidence:** Provides repeatable automated verification via `npm test` covering boundary cases (blank fields, negatives, decimals, maximum limits, future dates, leap days, month rollovers, CSV quoting, empty weeks, and active vs. broken streaks).
+
+## 13. Navigation Guardrails (`safeGoBack` & `safePush`)
+- **Decision:** Centralize navigation helpers in `src/core/utils/navigation.js` rather than calling `router.back()` or `router.push()` directly inside screens.
+- **Justification:**
+  - **Web Direct-URL Safety:** Refreshing or deep-linking directly to `/record-form` leaves Expo Router without stack history, causing an unhandled `GO_BACK` exception. `safeGoBack` checks `router.canGoBack()` first and falls back to `router.replace('/')`.
+  - **Rapid Double-Tap Protection:** `safePush` enforces a 400ms cooldown between modal pushes so eager double taps on the Dashboard or History `+` FAB / Edit buttons never open stacked duplicate modals.
+
+## 14. Responsive Orientation & Soft-Keyboard Handling
+- **Decision:** Set `"orientation": "default"` in `app.json`, constrain scrollable screen content to `maxWidth: 720`, place `<KeyboardAvoidingView>` outside `<ScreenContainer scroll>`, and enable `keyboardDismissMode="interactive"` + `automaticallyAdjustKeyboardInsets`.
+- **Justification:**
+  - Users can rotate freely to landscape on phones and tablets without clipping modals (`ConfirmDeleteModal` wraps content inside a `maxHeight: '88%'` `ScrollView`) or stretching forms uncomfortably across wide screens.
+  - Lower form inputs (`Water (ml)` and `Daily Water Goal`) shift reliably above the soft keyboard on both iOS and Android.
+
+## 15. Production Hygiene: Screen-to-DB Isolation & Removal of Dev Scaffolding
+- **Decision:** Remove temporary developer screens (`app/dev-gallery.js`, `src/core/database/testCrud.js`), keep repositories importing `getDb` directly from `src/core/database/database.js`, and route Settings sample-data seeding through `useSettingsStore.reseedSampleData()`.
+- **Justification:**
+  - Ensures **zero SQL queries and zero database imports** inside UI screens (even Settings sample-data restore routes strictly through the ViewModel).
+  - Eliminates require cycles permanently and keeps the shipped route tree clean (`/`, `/history`, `/settings`, `/record-form`).
