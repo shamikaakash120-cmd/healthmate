@@ -4,10 +4,11 @@
  *
  * RULES APPLIED:
  *   - Parameterized queries ONLY (? placeholders) to prevent SQL injection.
+ *   - Imports getDb directly from core/database/database.js (never barrel index.js) to avoid cycles.
  *   - Every function is async and wrapped in try/catch with friendly error messages.
  *   - No UI or business logic here.
  */
-import { getDb } from '../../../core/database';
+import { getDb } from '../../../core/database/database';
 
 /**
  * Inserts a new health record into the SQLite database.

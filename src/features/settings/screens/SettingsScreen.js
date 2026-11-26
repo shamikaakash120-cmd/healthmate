@@ -9,7 +9,6 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import appConfig from '../../../../app.json';
@@ -22,7 +21,6 @@ import {
   showErrorToast,
   showSuccessToast,
 } from '../../../core/components';
-import { seedDatabase } from '../../../core/database';
 import { METRICS, useTheme } from '../../../core/theme';
 import { useRecordsStore } from '../../records/viewmodel';
 import { ThemeSegmentedControl } from '../components';
@@ -59,16 +57,17 @@ const GOAL_FIELDS = [
  * @returns {React.JSX.Element} Rendered settings screen.
  */
 export default function SettingsScreen() {
-  const router = useRouter();
   const { colors, spacing, radius, touchTarget, isDark } = useTheme();
 
   // ViewModel store state & actions
   const dailyGoals = useSettingsStore((state) => state.dailyGoals);
   const themeMode = useSettingsStore((state) => state.themeMode);
   const isSavingGoals = useSettingsStore((state) => state.isSavingGoals);
+  const isSeeding = useSettingsStore((state) => state.isSeeding);
   const saveDailyGoals = useSettingsStore((state) => state.saveDailyGoals);
   const resetDailyGoals = useSettingsStore((state) => state.resetDailyGoals);
   const setThemeMode = useSettingsStore((state) => state.setThemeMode);
+  const reseedSampleData = useSettingsStore((state) => state.reseedSampleData);
 
   const loadRecords = useRecordsStore((state) => state.loadRecords);
   const loadTodayTotals = useRecordsStore((state) => state.loadTodayTotals);
@@ -80,7 +79,6 @@ export default function SettingsScreen() {
     water: String(dailyGoals.water),
   });
   const [errors, setErrors] = useState({});
-  const [isSeeding, setIsSeeding] = useState(false);
 
   // Focus refs for keyboard next-field progression
   const caloriesRef = useRef(null);
@@ -144,16 +142,12 @@ export default function SettingsScreen() {
   }
 
   async function handleReSeed() {
-    if (isSeeding) return;
-    setIsSeeding(true);
-    try {
-      await seedDatabase(true);
+    const result = await reseedSampleData();
+    if (result.success) {
       await Promise.all([loadRecords(), loadTodayTotals()]);
-      showSuccessToast('Database seeded with 10-day test records!');
-    } catch (err) {
-      showErrorToast(`Failed to seed data: ${err?.message || 'Unknown error'}`);
-    } finally {
-      setIsSeeding(false);
+      showSuccessToast('Sample health records restored!');
+    } else if (result.error) {
+      showErrorToast(`Failed to restore sample data: ${result.error}`);
     }
   }
 
@@ -168,16 +162,16 @@ export default function SettingsScreen() {
       : `Using ${isDark ? 'Dark' : 'Light'} theme across the app`;
 
   return (
-        <ScreenContainer
-          scroll
-          padded
-          edges={['top', 'left', 'right']}
-          contentContainerStyle={{ paddingBottom: spacing.xxxl * 1.5 }}
-        >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.keyboardAvoid}
-          >
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.keyboardAvoid, { backgroundColor: colors.background }]}
+    >
+      <ScreenContainer
+        scroll
+        padded
+        edges={['top', 'left', 'right']}
+        contentContainerStyle={{ paddingBottom: spacing.xxxl * 2 }}
+      >
             {/* ── Screen Header ── */}
             <View style={[styles.header, { paddingTop: spacing.sm, marginBottom: spacing.lg }]}>
               <AppText variant="caption" color="textMuted">
@@ -310,40 +304,30 @@ export default function SettingsScreen() {
                 </AppText>
               </AppCard>
 
-                {/* ── Data & Developer Tools (retained until cleanup) ── */}
+                {/* ── Sample Data ── */}
                 <AppCard style={{ marginBottom: spacing.md }}>
                   <AppText variant="heading" bold accessibilityRole="header" style={{ marginBottom: spacing.xs }}>
-                    Database & Developer Tools
+                    Sample Data
                   </AppText>
                   <AppText
                     variant="body"
                     color="textMuted"
                     style={{ marginBottom: spacing.md }}
                   >
-                    Manage sample dataset or run CRUD test verification.
+                    Populate 10 days of realistic sample health entries to explore trends and charts.
                   </AppText>
-                  <View style={styles.actionsCol}>
-                    <AppButton
-                      label="Re-seed Sample Data"
-                      variant="secondary"
-                      iconName="database-refresh"
-                      loading={isSeeding}
-                      onPress={handleReSeed}
-                      accessibilityLabel="Re-seed SQLite database with dummy data"
-                      style={{ marginBottom: spacing.sm }}
-                    />
-                    <AppButton
-                      label="Open Dev & CRUD Gallery"
-                      variant="text"
-                      iconName="flask-outline"
-                      onPress={() => router.push('/dev-gallery')}
-                      accessibilityLabel="Open developer component gallery and CRUD test runner"
-                    />
-                  </View>
+                  <AppButton
+                    label="Restore Sample Records"
+                    variant="secondary"
+                    iconName="database-refresh"
+                    loading={isSeeding}
+                    onPress={handleReSeed}
+                    accessibilityLabel="Restore 10-day sample health records"
+                  />
                 </AppCard>
-              </KeyboardAvoidingView>
-            </ScreenContainer>
-            );
+      </ScreenContainer>
+    </KeyboardAvoidingView>
+  );
 }
 
             const styles = StyleSheet.create({
@@ -364,8 +348,5 @@ export default function SettingsScreen() {
             aboutTitleCol: {
               flex: 1,
             flexShrink: 1,
-  },
-            actionsCol: {
-              flexDirection: 'column',
   },
 });

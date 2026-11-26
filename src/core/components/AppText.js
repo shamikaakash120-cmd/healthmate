@@ -3,7 +3,7 @@
  * @responsibility Themed text component bound to the design system type scale.
  */
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { Text } from 'react-native';
 import { useTheme } from '../theme';
 
 /**

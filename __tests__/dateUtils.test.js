@@ -94,4 +94,12 @@ describe('dateUtils', () => {
     expect(getWeekdayInitial('2026-08-18')).toBe('T');
     expect(getWeekdayShort('2026-08-18')).toBe('Tue');
   });
+
+  test('falls back safely on invalid dates in parseISODate and getDaysBetween', () => {
+    const fallback = parseISODate('not-a-date');
+    expect(Number.isNaN(fallback.getTime())).toBe(false);
+    expect(toISODate(fallback)).toBe('2026-08-18');
+    expect(getDaysBetween('not-a-date', '2026-08-18')).toBe(0);
+    expect(getDaysBetween('2026-08-10', '2026-02-30')).toBe(0);
+  });
 });

@@ -9,6 +9,7 @@
  *   - Updates app-wide theme override immediately when themeMode loads or changes.
  */
 import { create } from 'zustand';
+import { seedDatabase } from '../../../core/database/seed';
 import { useThemeStore } from '../../../core/theme';
 import {
   DEFAULT_GOALS,
@@ -27,6 +28,8 @@ import {
   setSettingsBatch,
 } from '../repository';
 
+let latestThemeRequestId = 0;
+
 /**
  * Zustand store hook managing persisted daily goals and app theme preference.
  */
@@ -43,6 +46,9 @@ export const useSettingsStore = create((set, get) => ({
 
   /** @type {boolean} */
   isSavingGoals: false,
+
+  /** @type {boolean} */
+  isSeeding: false,
 
   /** @type {boolean} */
   hasLoaded: false,
@@ -153,6 +159,7 @@ export const useSettingsStore = create((set, get) => ({
       return { success: false, error: `Unsupported theme mode "${mode}".` };
     }
 
+    const requestId = ++latestThemeRequestId;
     const previousMode = get().themeMode;
     set({ themeMode: mode, error: null });
     useThemeStore.getState().setThemeMode(mode);
@@ -162,8 +169,33 @@ export const useSettingsStore = create((set, get) => ({
       return { success: true };
     } catch (err) {
       const message = err?.message || 'Failed to save theme preference.';
-      set({ themeMode: previousMode, error: message });
-      useThemeStore.getState().setThemeMode(previousMode);
+      if (requestId === latestThemeRequestId) {
+        set({ themeMode: previousMode, error: message });
+        useThemeStore.getState().setThemeMode(previousMode);
+      }
+      return { success: false, error: message };
+    }
+  },
+
+  /**
+   * Appends realistic 10-day sample records to SQLite cleanly through the ViewModel.
+   * Guarded against rapid double-taps.
+   *
+   * @returns {Promise<{ success: boolean, error?: string }>}
+   */
+  reseedSampleData: async () => {
+    if (get().isSeeding) {
+      return { success: false, error: 'Sample data seeding is already in progress.' };
+    }
+
+    set({ isSeeding: true, error: null });
+    try {
+      await seedDatabase(true);
+      set({ isSeeding: false });
+      return { success: true };
+    } catch (err) {
+      const message = err?.message || 'Failed to add sample records.';
+      set({ isSeeding: false, error: message });
       return { success: false, error: message };
     }
   },

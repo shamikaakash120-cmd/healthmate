@@ -17,6 +17,8 @@ import { AppText } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 import {
   formatDisplayDate,
+  isFutureDate,
+  isValidISODate,
   parseISODate,
   today,
   toISODate,
@@ -127,8 +129,9 @@ export default function DateSearchBar({
             max={today()}
             value={searchDate || ''}
             onChange={(e) => {
-              if (e.target.value) {
-                onSelectDate(e.target.value);
+              const val = e.target.value;
+              if (val && isValidISODate(val) && !isFutureDate(val)) {
+                onSelectDate(val);
               }
             }}
             style={styles.webHiddenInput}

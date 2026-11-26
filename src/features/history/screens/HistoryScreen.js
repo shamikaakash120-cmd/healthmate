@@ -25,6 +25,7 @@ import {
 } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 import { formatDisplayDate } from '../../../core/utils/dateUtils';
+import { safePush } from '../../../core/utils/navigation';
 import { selectFilteredRecords, useRecordsStore } from '../../records/viewmodel';
 import {
   ConfirmDeleteModal,
@@ -99,12 +100,12 @@ export default function HistoryScreen() {
   );
 
   const handleOpenAdd = useCallback(() => {
-    router.push('/record-form');
+    safePush(router, '/record-form');
   }, [router]);
 
   const handleEdit = useCallback(
     (record) => {
-      router.push({
+      safePush(router, {
         pathname: '/record-form',
         params: { id: String(record.id) },
       });

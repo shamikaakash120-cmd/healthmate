@@ -5,6 +5,10 @@
  * No UI code. No filesystem or sharing side-effects.
  */
 
+/**
+ * Standard CSV header row required for HealthMate record exports.
+ * @type {string}
+ */
 export const HEALTH_RECORDS_CSV_HEADER = 'id,date,steps,calories,water';
 
 /**

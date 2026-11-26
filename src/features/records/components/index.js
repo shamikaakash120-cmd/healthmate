@@ -1,12 +1,5 @@
 /**
  * @layer Presentation (Records Components)
- * @responsibility UI components specific to the records feature (e.g. record cards, form inputs).
+ * @responsibility Barrel export reserved for records feature UI components.
  */
-
-/**
- * Placeholder for records components.
- * @returns {null} Empty placeholder.
- */
-export function RecordsComponentsPlaceholder() {
-  return null;
-}
+export {};

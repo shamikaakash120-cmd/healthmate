@@ -50,9 +50,16 @@ export default function ScreenContainer({
       {scroll ? (
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={[paddingStyle, { paddingBottom: spacing.xxxl }, contentContainerStyle]}
+          contentContainerStyle={[
+            styles.scrollContent,
+            paddingStyle,
+            { paddingBottom: spacing.xxxl },
+            contentContainerStyle,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
           refreshControl={refreshControl}
         >
           {children}
@@ -67,4 +74,9 @@ export default function ScreenContainer({
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   flex: { flex: 1 },
+  scrollContent: {
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+  },
 });

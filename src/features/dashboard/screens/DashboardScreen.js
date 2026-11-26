@@ -17,6 +17,7 @@ import {
   ScreenContainer,
 } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
+import { safePush } from '../../../core/utils/navigation';
 import {
   HeroProgressCard,
   StreakBannerCard,
@@ -61,7 +62,7 @@ export default function DashboardScreen() {
   );
 
   const handleOpenAddForm = useCallback(() => {
-    router.push('/record-form');
+    safePush(router, '/record-form');
   }, [router]);
 
   // ── Loading State ──────────────────────────────────────────────────────────

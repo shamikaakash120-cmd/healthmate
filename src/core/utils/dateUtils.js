@@ -60,6 +60,10 @@ export function today() {
  * parseISODate("2026-08-18"); // → Date(2026, 7, 18)
  */
 export function parseISODate(iso) {
+  if (!isValidISODate(iso)) {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
   const [y, m, d] = iso.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
@@ -183,6 +187,7 @@ export function getLastNDates(n) {
  * getDaysBetween("2026-11-20", "2026-11-23"); // → 3
  */
 export function getDaysBetween(isoA, isoB) {
+  if (!isValidISODate(isoA) || !isValidISODate(isoB)) return 0;
   const a = parseISODate(isoA);
   const b = parseISODate(isoB);
   const msPerDay = 24 * 60 * 60 * 1000;

@@ -17,7 +17,9 @@ export * from './shadows';
 export * from './spacing';
 export * from './typography';
 
-// Default static tokens export for static style definitions
+/**
+ * Default static light color tokens export for static style definitions.
+ */
 export const COLORS = lightColors;
 
 /**

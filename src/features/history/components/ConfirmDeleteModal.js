@@ -4,7 +4,7 @@
  */
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppButton, AppCard, AppText } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 
@@ -56,6 +56,11 @@ export default function ConfirmDeleteModal({
         />
 
         <AppCard style={[styles.dialogCard, { padding: spacing.lg }]}>
+          <ScrollView
+            style={styles.dialogScroll}
+            contentContainerStyle={styles.dialogScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
           <View
             style={[
               styles.iconWell,
@@ -123,6 +128,7 @@ export default function ConfirmDeleteModal({
                 style={{ flex: 1 }}
               />
             </View>
+          </ScrollView>
         </AppCard>
       </View>
     </Modal>
@@ -138,6 +144,13 @@ const styles = StyleSheet.create({
   dialogCard: {
     width: '100%',
     maxWidth: 360,
+    maxHeight: '88%',
+    alignItems: 'center',
+  },
+  dialogScroll: {
+    width: '100%',
+  },
+  dialogScrollContent: {
     alignItems: 'center',
   },
   iconWell: {

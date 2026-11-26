@@ -20,6 +20,8 @@ import {
   AppCard,
   AppText,
   AppTextInput,
+  ErrorState,
+  LoadingState,
   PressableScale,
   QuickChip,
   ScreenContainer,
@@ -29,6 +31,8 @@ import { METRICS, useTheme } from '../../../core/theme';
 import {
   formatDisplayDate,
   formatRelativeDay,
+  isFutureDate,
+  isValidISODate,
   parseISODate,
   today,
   toISODate,
@@ -44,7 +48,14 @@ import { useRecordsStore } from '../viewmodel';
 export default function RecordFormScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const recordId = params?.id ? Number(params.id) : null;
+  const hasIdParam =
+    params?.id !== undefined &&
+    params?.id !== null &&
+    String(params.id).trim() !== '';
+  const parsedId = hasIdParam ? Number(params.id) : null;
+  const isInvalidIdParam =
+    hasIdParam && (!Number.isInteger(parsedId) || parsedId <= 0);
+  const recordId = hasIdParam && !isInvalidIdParam ? parsedId : null;
   const isEditing = Boolean(recordId);
 
   const { colors, spacing, radius, touchTarget } = useTheme();
@@ -66,26 +77,59 @@ export default function RecordFormScreen() {
   const [water, setWater] = useState('');
   const [errors, setErrors] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const [isLoadingRecord, setIsLoadingRecord] = useState(Boolean(recordId));
+  const [loadError, setLoadError] = useState(
+    isInvalidIdParam ? 'Invalid record ID.' : null
+  );
 
   // Prefill fields when editing an existing record
   useEffect(() => {
     let isMounted = true;
     async function loadInitial() {
-      if (recordId) {
-        const existing = await getRecordForEdit(recordId);
-        if (existing && isMounted) {
-          setDate(existing.date);
-          setSteps(String(existing.steps));
-          setCalories(String(existing.calories));
-          setWater(String(existing.water));
+      if (isInvalidIdParam) {
+        if (isMounted) {
+          setLoadError('Invalid record ID.');
+          setIsLoadingRecord(false);
         }
+        return;
+      }
+
+      if (recordId) {
+        setIsLoadingRecord(true);
+        setLoadError(null);
+        try {
+          const existing = await getRecordForEdit(recordId);
+          if (!isMounted) return;
+          if (!existing) {
+            setLoadError(
+              'This entry could not be found. It may have been deleted.'
+            );
+          } else {
+            setDate(existing.date);
+            setSteps(String(existing.steps));
+            setCalories(String(existing.calories));
+            setWater(String(existing.water));
+          }
+        } catch (err) {
+          if (isMounted) {
+            setLoadError(err?.message || 'Failed to load health record.');
+          }
+        } finally {
+          if (isMounted) {
+            setIsLoadingRecord(false);
+          }
+        }
+      } else {
+        setIsLoadingRecord(false);
+        setLoadError(null);
       }
     }
     loadInitial();
     return () => {
       isMounted = false;
     };
-  }, [recordId, getRecordForEdit]);
+  }, [recordId, isInvalidIdParam, reloadNonce, getRecordForEdit]);
 
   /**
    * Increments an input field value by a given delta.
@@ -138,11 +182,44 @@ export default function RecordFormScreen() {
       ? `${relativeDay} · ${formattedDate}`
       : formattedDate;
 
+  if (isLoadingRecord) {
+    return (
+      <ScreenContainer padded>
+        <LoadingState label="Loading entry..." />
+      </ScreenContainer>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <ScreenContainer padded>
+        <ErrorState
+          message={loadError}
+          onRetry={
+            !isInvalidIdParam ? () => setReloadNonce((n) => n + 1) : undefined
+          }
+        />
+        <AppButton
+          label="Go Back"
+          variant="secondary"
+          iconName="arrow-left"
+          onPress={() => safeGoBack(router)}
+          accessibilityLabel="Go back"
+          style={{ marginTop: spacing.md }}
+        />
+      </ScreenContainer>
+    );
+  }
+
   return (
-    <ScreenContainer scroll padded>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardAvoid}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.keyboardAvoid, { backgroundColor: colors.background }]}
+    >
+      <ScreenContainer
+        scroll
+        padded
+        contentContainerStyle={{ paddingBottom: spacing.xxxl * 2 }}
       >
         {/* ── Modal Header ── */}
             <View style={[styles.modalHeader, { paddingTop: spacing.sm, gap: spacing.sm, marginBottom: spacing.lg }]}>
@@ -156,6 +233,7 @@ export default function RecordFormScreen() {
               </View>
           <PressableScale
                 onPress={() => safeGoBack(router)}
+                disabled={isSaving}
                 scaleTo={0.93}
                 duration={150}
                 accessibilityLabel="Close form"
@@ -251,11 +329,23 @@ export default function RecordFormScreen() {
                     max={today()}
                     value={date}
                     onChange={(e) => {
-                      if (e.target.value) {
-                        setDate(e.target.value);
-                        if (errors.date) {
-                          setErrors((prev) => ({ ...prev, date: null }));
-                        }
+                      const val = e.target.value;
+                      if (!val) return;
+                      if (!isValidISODate(val)) {
+                        setErrors((prev) => ({
+                          ...prev,
+                          date: 'Please enter a valid date.',
+                        }));
+                        return;
+                      }
+                      setDate(val);
+                      if (isFutureDate(val)) {
+                        setErrors((prev) => ({
+                          ...prev,
+                          date: 'Cannot select a future date.',
+                        }));
+                      } else if (errors.date) {
+                        setErrors((prev) => ({ ...prev, date: null }));
                       }
                     }}
                     style={styles.webDateInput}
@@ -496,13 +586,14 @@ export default function RecordFormScreen() {
                   <AppButton
                     label="Cancel"
                     variant="secondary"
+                    disabled={isSaving}
                     onPress={() => safeGoBack(router)}
                     accessibilityLabel="Cancel"
                   />
                 </AppCard>
-              </KeyboardAvoidingView>
-    </ScreenContainer>
-          );
+      </ScreenContainer>
+    </KeyboardAvoidingView>
+  );
 }
 
           const styles = StyleSheet.create({

@@ -10,10 +10,12 @@ import { initDatabase, seedDatabase } from '../src/core/database';
 import { useTheme } from '../src/core/theme';
 import { useSettingsStore } from '../src/features/settings/viewmodel';
 
-/* 
-@returns {React.JSX.Element} 
+/**
+ * Root navigation layout responsible for database setup, startup settings hydration,
+ * modal routes, and global Toast mounting.
+ *
+ * @returns {React.JSX.Element}
  */
-
 export default function RootLayout() {
   const { colors, isDark } = useTheme();
   const [isDbReady, setIsDbReady] = useState(false);
@@ -76,9 +78,6 @@ export default function RootLayout() {
             headerShown: false,
           }}
         />
-
-        {/* Developer testing & CRUD diagnostics screen */}
-        <Stack.Screen name="dev-gallery" options={{ headerShown: false }} />
       </Stack>
 
       {/* Global snackbar / toast notifications */}

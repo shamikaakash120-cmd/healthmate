@@ -425,9 +425,8 @@ export const useRecordsStore = create((set, get) => ({
         getTotalsForDate(yesterdayStr),
       ]);
       set({ todayTotals, yesterdayTotals });
-    } catch (err) {
-      // Non-fatal: keep current totals if calculation encounters an issue
-      console.warn('[useRecordsStore] loadTodayTotals failed:', err?.message);
+    } catch {
+      // Non-fatal: keep existing totals if background calculation fails
     }
   },
 
@@ -438,11 +437,16 @@ export const useRecordsStore = create((set, get) => ({
    * @returns {Promise<{ id: number, date: string, steps: number, calories: number, water: number }|null>}
    */
   getRecordForEdit: async (id) => {
-    const cached = get().records.find((r) => r.id === id);
+    const numericId = Number(id);
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+      return null;
+    }
+
+    const cached = get().records.find((r) => r.id === numericId);
     if (cached) {
       return cached;
     }
-    return await getRecordById(id);
+    return await getRecordById(numericId);
   },
 }));
 
