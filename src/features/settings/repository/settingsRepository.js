@@ -2,10 +2,7 @@
  * @layer Repository (Settings)
  * @responsibility Parameterized SQLite persistence operations for key-value application settings.
  *
- * RULES APPLIED:
- *   - Parameterized queries ONLY (? placeholders) to prevent SQL injection.
- *   - Imports getDb directly from core/database/database.js (never barrel index.js) to avoid cycles.
- *   - Async error-wrapped methods with descriptive messages; no UI or validation logic here.
+ * Imports getDb directly from core/database/database.js (not barrel index.js) to prevent require cycles.
  */
 import { getDb } from '../../../core/database/database';
 

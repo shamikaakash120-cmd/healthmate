@@ -63,7 +63,6 @@ export default function AppTextInput({
 
   return (
     <View style={[styles.wrapper, style]}>
-      {/* Label */}
       {label && (
         <AppText
           variant="caption"
@@ -74,7 +73,6 @@ export default function AppTextInput({
         </AppText>
       )}
 
-      {/* Input row */}
       <View
         style={[
           styles.inputRow,
@@ -133,7 +131,6 @@ export default function AppTextInput({
         )}
       </View>
 
-      {/* Helper / Error text */}
       {(error || helperText) && (
         <AppText
           variant="caption"

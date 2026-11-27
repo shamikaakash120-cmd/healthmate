@@ -47,20 +47,17 @@ export async function initDatabase() {
     try {
       const db = await openDatabaseAsync(DB_NAME);
 
-      // Enable Write-Ahead Logging (WAL) for concurrency & foreign keys
+      // Enable WAL for concurrent reads/writes and enforce foreign key constraints
       await db.execAsync(`
         PRAGMA journal_mode = WAL;
         PRAGMA foreign_keys = ON;
       `);
 
-      // Read current schema version
       const versionResult = await db.getFirstAsync('PRAGMA user_version;');
       const currentVersion = versionResult?.user_version ?? 0;
 
-      // Initial migration: Version 0 -> Version 1
       if (currentVersion < 1) {
         await db.execAsync(`
-          -- Health records table strictly matching coursework specifications
           CREATE TABLE IF NOT EXISTS health_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT NOT NULL,
@@ -69,16 +66,13 @@ export async function initDatabase() {
             water INTEGER NOT NULL
           );
 
-          -- Fast date-based querying, filtering, and daily sum aggregations
           CREATE INDEX IF NOT EXISTS idx_health_records_date ON health_records(date);
 
-          -- Key-value settings table for goals and app preferences
           CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
           );
 
-          -- Advance schema version to 1
           PRAGMA user_version = 1;
         `);
       }
@@ -86,7 +80,7 @@ export async function initDatabase() {
       dbInstance = db;
       return db;
     } catch (error) {
-      initPromise = null; // Clear promise so retry is possible
+      initPromise = null; // Clear in-flight lock so startup retry can succeed
       throw new Error(
         `Unable to initialize the HealthMate database. Details: ${error?.message || 'Unknown database error'}`
       );

@@ -10,7 +10,6 @@ import { SHADOWS, getElevatedShadow, getShadow } from './shadows';
 import { RADIUS, SPACING, TOUCH_TARGET } from './spacing';
 import { TYPOGRAPHY } from './typography';
 
-// Re-export all individual modules for granular imports
 export * from './colors';
 export * from './metrics';
 export * from './shadows';

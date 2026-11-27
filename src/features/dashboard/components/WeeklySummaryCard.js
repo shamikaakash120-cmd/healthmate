@@ -3,9 +3,9 @@
  * @responsibility 7-day weekly summary card with selectable metric tabs, totals & daily averages,
  *                and an animated plain-View bar chart highlighting today (no chart libraries).
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppCard, AppText, PressableScale } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 import { formatNumber } from '../../../core/utils/formatters';
@@ -77,72 +77,69 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
 
   return (
     <AppCard style={{ marginBottom: spacing.md }}>
-      {/* ── Header ── */}
-        <View style={[styles.headerRow, { gap: spacing.xs, marginBottom: spacing.sm + 2 }]}>
-          <AppText variant="heading" bold>
-            Weekly Summary
-          </AppText>
-          <AppText variant="caption" color="textMuted">
-            {subtitle}
-          </AppText>
-        </View>
-
-        {/* ── Metric Selector Tabs (48dp touch targets) ── */}
-        <View
-          style={[styles.tabsRow, { gap: spacing.xs + 2, marginBottom: spacing.md }]}
-          accessibilityRole="tablist"
-          accessibilityLabel="Select weekly metric chart"
-        >
-            {
-              tabs.map((tab) => {
-                const isSelected = tab.key === selectedMetric;
-                const tabAccent = colors[tab.colorKey];
-
-                return (
-            <PressableScale
-              key={tab.key}
-              scaleTo={0.97}
-              duration={150}
-              onPress={() => onSelectMetric(tab.key)}
-              containerStyle={styles.tabWrap}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={`Show weekly ${tab.label.toLowerCase()} chart`}
-              style={[
-                styles.tabButton,
-                {
-                  minHeight: touchTarget.min,
-                  backgroundColor: isSelected ? tabAccent : colors.surfaceAlt,
-                  borderRadius: radius.button - 2,
-                  paddingHorizontal: spacing.xs + 2,
-                },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name={tab.icon}
-                size={16}
-                color={isSelected ? colors.primaryText : tabAccent}
-                style={{ marginRight: spacing.xs }}
-                accessibilityElementsHidden
-                importantForAccessibility="no"
-              />
-              <AppText
-                variant="caption"
-                bold={isSelected}
-                numberOfLines={1}
-                style={{
-                  color: isSelected ? colors.primaryText : colors.text,
-                  flexShrink: 1,
-                }}
-              >
-                {tab.label}
-              </AppText>
-            </PressableScale>
-        );
-        })}
+      <View style={[styles.headerRow, { gap: spacing.xs, marginBottom: spacing.sm + 2 }]}>
+        <AppText variant="heading" bold>
+          Weekly Summary
+        </AppText>
+        <AppText variant="caption" color="textMuted">
+          {subtitle}
+        </AppText>
       </View>
 
-      {/* ── Active Metric 7-Day Total & Average Callout ── */}
+      <View
+        style={[styles.tabsRow, { gap: spacing.xs + 2, marginBottom: spacing.md }]}
+        accessibilityRole="tablist"
+        accessibilityLabel="Select weekly metric chart"
+      >
+        {
+          tabs.map((tab) => {
+            const isSelected = tab.key === selectedMetric;
+            const tabAccent = colors[tab.colorKey];
+
+            return (
+              <PressableScale
+                key={tab.key}
+                scaleTo={0.97}
+                duration={150}
+                onPress={() => onSelectMetric(tab.key)}
+                containerStyle={styles.tabWrap}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={`Show weekly ${tab.label.toLowerCase()} chart`}
+                style={[
+                  styles.tabButton,
+                  {
+                    minHeight: touchTarget.min,
+                    backgroundColor: isSelected ? tabAccent : colors.surfaceAlt,
+                    borderRadius: radius.button - 2,
+                    paddingHorizontal: spacing.xs + 2,
+                  },
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name={tab.icon}
+                  size={16}
+                  color={isSelected ? colors.primaryText : tabAccent}
+                  style={{ marginRight: spacing.xs }}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+                <AppText
+                  variant="caption"
+                  bold={isSelected}
+                  numberOfLines={1}
+                  style={{
+                    color: isSelected ? colors.primaryText : colors.text,
+                    flexShrink: 1,
+                  }}
+                >
+                  {tab.label}
+                </AppText>
+              </PressableScale>
+            );
+          })}
+      </View>
+
       <View
         style={[
           styles.statsBanner,
@@ -193,7 +190,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
         </View>
       </View>
 
-      {/* ── Animated Plain-View 7-Day Bar Chart ── */}
       <View
         style={[styles.chartRow, { marginBottom: spacing.sm }]}
         accessibilityLabel={`7-day ${activeSummary.label} bar chart`}
@@ -211,7 +207,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
               accessible
               accessibilityLabel={`${bar.isToday ? 'Today' : bar.weekdayShort}: ${formatNumber(bar.value)} ${activeSummary.unit}`}
             >
-              {/* Value caption above bar */}
               <AppText
                 variant="caption"
                 numberOfLines={1}
@@ -227,7 +222,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 {bar.compactValue || '\u00A0'}
               </AppText>
 
-              {/* Vertical track & animated bar */}
               <View
                 style={[
                   styles.barTrack,
@@ -248,7 +242,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
                 />
               </View>
 
-              {/* Day initial below bar (Today highlighted) */}
               <View
                 style={[
                   styles.dayBadge,
@@ -278,7 +271,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
         })}
       </View>
 
-      {/* ── Graceful Empty Week / Empty Metric Guidance ── */}
       {(!hasData || !hasMetricData) && (
         <View
           style={[
@@ -304,7 +296,6 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
         </View>
       )}
 
-      {/* ── All-Metrics 7-Day Breakdown (48dp interactive rows) ── */}
       <View
         style={[
           styles.breakdownContainer,
@@ -315,68 +306,68 @@ export default function WeeklySummaryCard({ weeklySummary, onSelectMetric }) {
           },
         ]}
       >
-          {
-            summaries.map((item) => {
-              const isCurrent = item.key === selectedMetric;
-              const itemColor = colors[item.colorKey];
+        {
+          summaries.map((item) => {
+            const isCurrent = item.key === selectedMetric;
+            const itemColor = colors[item.colorKey];
 
-              return (
-            <PressableScale
-              key={item.key}
-              scaleTo={0.985}
-              duration={150}
-              onPress={() => onSelectMetric(item.key)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isCurrent }}
-              accessibilityLabel={`${item.label} weekly total ${formatNumber(item.total)} ${item.unit}, daily average ${formatNumber(item.dailyAverage)} ${item.unit}. Tap to show chart.`}
-              style={[
-                styles.breakdownRow,
-                {
-                  minHeight: touchTarget.min,
-                  paddingHorizontal: spacing.xs,
-                  borderRadius: radius.sm,
-                  backgroundColor: isCurrent ? colors.surfaceAlt : 'transparent',
-                },
-              ]}
-            >
-              <View style={styles.breakdownLeft}>
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={18}
-                  color={itemColor}
-                  style={{ marginRight: spacing.xs + 2 }}
-                  accessibilityElementsHidden
-                  importantForAccessibility="no"
-                />
-                <AppText
-                  variant="caption"
-                  bold={isCurrent}
-                  color={isCurrent ? 'text' : 'textMuted'}
-                >
-                  {item.label}
-                </AppText>
-              </View>
+            return (
+              <PressableScale
+                key={item.key}
+                scaleTo={0.985}
+                duration={150}
+                onPress={() => onSelectMetric(item.key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isCurrent }}
+                accessibilityLabel={`${item.label} weekly total ${formatNumber(item.total)} ${item.unit}, daily average ${formatNumber(item.dailyAverage)} ${item.unit}. Tap to show chart.`}
+                style={[
+                  styles.breakdownRow,
+                  {
+                    minHeight: touchTarget.min,
+                    paddingHorizontal: spacing.xs,
+                    borderRadius: radius.sm,
+                    backgroundColor: isCurrent ? colors.surfaceAlt : 'transparent',
+                  },
+                ]}
+              >
+                <View style={styles.breakdownLeft}>
+                  <MaterialCommunityIcons
+                    name={item.icon}
+                    size={18}
+                    color={itemColor}
+                    style={{ marginRight: spacing.xs + 2 }}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
+                  />
+                  <AppText
+                    variant="caption"
+                    bold={isCurrent}
+                    color={isCurrent ? 'text' : 'textMuted'}
+                  >
+                    {item.label}
+                  </AppText>
+                </View>
 
-              <View style={styles.breakdownRight}>
-                <AppText
-                  variant="caption"
-                  bold
-                  style={{ color: colors.text }}
-                >
-                  {formatNumber(item.total)} {item.unit}
-                </AppText>
-                <AppText
-                  variant="caption"
-                  color="textMuted"
-                  style={{ marginLeft: spacing.xs + 2 }}
-                >
-                  · {formatNumber(item.dailyAverage)}/day
-                </AppText>
-              </View>
-            </PressableScale>
-      );
-        })}
-    </View>
+                <View style={styles.breakdownRight}>
+                  <AppText
+                    variant="caption"
+                    bold
+                    style={{ color: colors.text }}
+                  >
+                    {formatNumber(item.total)} {item.unit}
+                  </AppText>
+                  <AppText
+                    variant="caption"
+                    color="textMuted"
+                    style={{ marginLeft: spacing.xs + 2 }}
+                  >
+                    · {formatNumber(item.dailyAverage)}/day
+                  </AppText>
+                </View>
+              </PressableScale>
+            );
+          })}
+      </View>
     </AppCard >
   );
 }

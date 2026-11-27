@@ -2,10 +2,6 @@
  * @layer ViewModel (Dashboard)
  * @responsibility Zustand store and React ViewModel hook deriving daily progress,
  *                yesterday comparisons, encouraging messages, and refresh/loading states.
- *
- * RULES APPLIED:
- *   - No SQL queries here; all persistence reads go through recordRepository.
- *   - No UI/JSX code here; DashboardScreen strictly renders derived ViewModel state.
  */
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { create } from 'zustand';
@@ -36,8 +32,6 @@ import { DEFAULT_GOALS } from '../../settings/model';
 import { useSettingsStore } from '../../settings/viewmodel';
 
 const ZERO_TOTALS = Object.freeze({ steps: 0, calories: 0, water: 0 });
-
-// ─── Pure Derivation Helpers ──────────────────────────────────────────────────
 
 /**
  * Derives a calm, judgment-free "vs yesterday" comparison object for one metric.
@@ -319,38 +313,38 @@ export function deriveWeeklySummary(
   const activeSummary = metricStats[activeMetricKey];
   const maxDayValue = activeSummary.maxDayValue;
 
-    const bars = dates.map((iso) => {
-      const value = Number(rowByDate.get(iso)?.[activeMetricKey]) || 0;
-      const ratio = maxDayValue > 0 ? value / maxDayValue : 0;
+  const bars = dates.map((iso) => {
+    const value = Number(rowByDate.get(iso)?.[activeMetricKey]) || 0;
+    const ratio = maxDayValue > 0 ? value / maxDayValue : 0;
 
-        return {
-          date: iso,
-          dayInitial: getWeekdayInitial(iso),
-          weekdayShort: getWeekdayShort(iso),
-          isToday: iso === todayStr,
-          value,
-          compactValue: value > 0 ? formatCompact(value) : '',
-          ratio,
-        };
-      });
+    return {
+      date: iso,
+      dayInitial: getWeekdayInitial(iso),
+      weekdayShort: getWeekdayShort(iso),
+      isToday: iso === todayStr,
+      value,
+      compactValue: value > 0 ? formatCompact(value) : '',
+      ratio,
+    };
+  });
 
-      return {
-        selectedMetric: activeMetricKey,
-        tabs: METRIC_KEYS.map((key) => ({
-          key,
-          label: METRICS[key].label,
-          icon: METRICS[key].icon,
-          colorKey: METRICS[key].colorKey,
-          tintKey: METRICS[key].tintKey,
-        })),
-        summaries: METRIC_KEYS.map((key) => metricStats[key]),
-        activeSummary,
-        bars,
-        hasData: rowByDate.size > 0,
-        hasMetricData: activeSummary.total > 0,
-        activeDaysCount: rowByDate.size,
-      };
-    }
+  return {
+    selectedMetric: activeMetricKey,
+    tabs: METRIC_KEYS.map((key) => ({
+      key,
+      label: METRICS[key].label,
+      icon: METRICS[key].icon,
+      colorKey: METRICS[key].colorKey,
+      tintKey: METRICS[key].tintKey,
+    })),
+    summaries: METRIC_KEYS.map((key) => metricStats[key]),
+    activeSummary,
+    bars,
+    hasData: rowByDate.size > 0,
+    hasMetricData: activeSummary.total > 0,
+    activeDaysCount: rowByDate.size,
+  };
+}
 
 /**
  * Derives the consecutive-day logging streak and gentle encouraging copy.
@@ -418,8 +412,6 @@ export function deriveStreak(distinctDatesDesc = [], todayStr = today()) {
         : 'Consistency builds lasting wellness habits.',
   };
 }
-
-// ─── Zustand Store ────────────────────────────────────────────────────────────
 
 /**
  * Zustand store managing dashboard async loading, pull-to-refresh, weekly stats, and aggregated totals.
@@ -509,8 +501,6 @@ export const useDashboardStore = create((set) => ({
     }
   },
 }));
-
-// ─── ViewModel Hook ───────────────────────────────────────────────────────────
 
 /**
  * Presentation-ready ViewModel hook for DashboardScreen.
@@ -605,30 +595,30 @@ export function useDashboardViewModel() {
     [weeklyDates, weeklyRows, selectedWeeklyMetric]
   );
 
-const streak = useMemo(
-  () => deriveStreak(distinctRecordDates, todayDate),
-  [distinctRecordDates, todayDate]
-);
+  const streak = useMemo(
+    () => deriveStreak(distinctRecordDates, todayDate),
+    [distinctRecordDates, todayDate]
+  );
 
-const displayDate = useMemo(() => formatDisplayDate(todayDate), [todayDate]);
+  const displayDate = useMemo(() => formatDisplayDate(todayDate), [todayDate]);
 
-return {
-  greeting,
-  displayDate,
-  todayEntryCount,
-  hasEntriesToday,
-  metrics: derived.metrics,
-  overallPercent: derived.overallPercent,
-  allGoalsMet: derived.allGoalsMet,
-  encouragement,
-  weeklySummary,
-  streak,
-  onSelectWeeklyMetric: setSelectedWeeklyMetric,
-  isInitialLoading: isLoading && !hasLoaded,
-  isRefreshing,
-  error,
-  loadOnFocus,
-  onRefresh,
-  retry,
-};
+  return {
+    greeting,
+    displayDate,
+    todayEntryCount,
+    hasEntriesToday,
+    metrics: derived.metrics,
+    overallPercent: derived.overallPercent,
+    allGoalsMet: derived.allGoalsMet,
+    encouragement,
+    weeklySummary,
+    streak,
+    onSelectWeeklyMetric: setSelectedWeeklyMetric,
+    isInitialLoading: isLoading && !hasLoaded,
+    isRefreshing,
+    error,
+    loadOnFocus,
+    onRefresh,
+    retry,
+  };
 }

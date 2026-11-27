@@ -3,6 +3,8 @@
  * @responsibility Bottom-sheet modal for picking a validated From / To date range
  *                across Android, iOS, and Web without cluttering the main list.
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Modal,
@@ -13,8 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppButton, AppText, PressableScale } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 import {
@@ -59,13 +59,12 @@ export default function DateRangeModal({
 
   const [fromDate, setFromDate] = useState(rangeStart || shiftISODate(today(), -6));
   const [toDate, setToDate] = useState(rangeEnd || today());
-  const [activeField, setActiveField] = useState(null); // 'from' | 'to' | null
+  const [activeField, setActiveField] = useState(null);
   const [error, setError] = useState(null);
   const [isApplying, setIsApplying] = useState(false);
 
   const hasActiveRange = Boolean(rangeStart && rangeEnd);
 
-  // Reset modal drafts whenever opened
   useEffect(() => {
     if (visible) {
       setFromDate(rangeStart || shiftISODate(today(), -6));
@@ -157,7 +156,6 @@ export default function DateRangeModal({
           ]}
         >
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* ── Header ── */}
             <View style={[styles.headerRow, { gap: spacing.sm, marginBottom: spacing.md }]}>
               <View style={styles.headerTextCol}>
                 <AppText variant="heading" bold accessibilityRole="header">
@@ -193,7 +191,6 @@ export default function DateRangeModal({
               </PressableScale>
             </View>
 
-            {/* ── From & To Date Rows ── */}
             {
               RANGE_FIELDS.map((field) => {
                 const isoValue = field.key === 'from' ? fromDate : toDate;
@@ -210,128 +207,127 @@ export default function DateRangeModal({
                       {field.label}
                     </AppText>
 
-                      {Platform.OS === 'web' ? (
-                        <View
-                          style={[
-                            styles.dateRow,
-                            {
-                              minHeight: touchTarget.min,
-                              backgroundColor: colors.surfaceAlt,
-                              borderColor: error ? colors.error : colors.border,
-                              borderRadius: radius.sm,
-                              paddingHorizontal: spacing.md,
-                              paddingVertical: spacing.xs,
-                              gap: spacing.sm,
-                            },
-                          ]}
+                    {Platform.OS === 'web' ? (
+                      <View
+                        style={[
+                          styles.dateRow,
+                          {
+                            minHeight: touchTarget.min,
+                            backgroundColor: colors.surfaceAlt,
+                            borderColor: error ? colors.error : colors.border,
+                            borderRadius: radius.sm,
+                            paddingHorizontal: spacing.md,
+                            paddingVertical: spacing.xs,
+                            gap: spacing.sm,
+                          },
+                        ]}
+                      >
+                        <Pressable
+                          onPress={() => openWebDatePicker(field.key)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${field.label} date, currently ${formatted}. Tap to change.`}
+                          style={styles.dateRowLeft}
                         >
-                          <Pressable
-                            onPress={() => openWebDatePicker(field.key)}
-                            accessibilityRole="button"
-                            accessibilityLabel={`${field.label} date, currently ${formatted}. Tap to change.`}
-                            style={styles.dateRowLeft}
-                          >
-                            <MaterialCommunityIcons
-                              name="calendar-month"
-                              size={20}
-                              color={colors.primary}
-                              style={{ marginRight: spacing.sm }}
-                              accessibilityElementsHidden
-                              importantForAccessibility="no"
-                            />
-                            <AppText variant="body" bold style={styles.dateValueText}>
-                              {formatted}
-                            </AppText>
-                          </Pressable>
-
-                          <input
-                            ref={field.key === 'from' ? webFromInputRef : webToInputRef}
-                            type="date"
-                            max={today()}
-                            value={isoValue}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              try {
-                                if (typeof e.currentTarget.showPicker === 'function') {
-                                  e.currentTarget.showPicker();
-                                }
-                              } catch {
-                                // Allow direct inline typing/calendar interaction
-                              }
-                            }}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (!val) return;
-                              if (isValidISODate(val)) {
-                                updateField(field.key, val);
-                              } else {
-                                setError('Please enter a valid calendar date.');
-                              }
-                            }}
-                            aria-label={`Select ${field.label} date`}
-                            style={{
-                              border: `1px solid ${colors.border}`,
-                              borderRadius: radius.sm,
-                              backgroundColor: colors.surface,
-                              color: colors.primary,
-                              colorScheme: isDark ? 'dark' : 'light',
-                              fontFamily: 'inherit',
-                              fontSize: 13,
-                              fontWeight: '600',
-                              padding: '6px 10px',
-                              minHeight: 36,
-                              cursor: 'pointer',
-                            }}
+                          <MaterialCommunityIcons
+                            name="calendar-month"
+                            size={20}
+                            color={colors.primary}
+                            style={{ marginRight: spacing.sm }}
+                            accessibilityElementsHidden
+                            importantForAccessibility="no"
                           />
-                        </View>
-                      ) : (
-                          <TouchableOpacity
-                            activeOpacity={0.75}
-                            onPress={() => {
-                              setActiveField(isFocused ? null : field.key);
-                            }}
-                            accessibilityRole="button"
-                            accessibilityLabel={`${field.label} date, currently ${formatted}. Tap to change.`}
-                            style={[
-                              styles.dateRow,
-                              {
-                                minHeight: touchTarget.min,
-                                backgroundColor: colors.surfaceAlt,
-                                borderColor: error
-                                  ? colors.error
-                                  : isFocused
-                                    ? colors.primary
-                                    : colors.border,
-                                borderRadius: radius.sm,
-                                paddingHorizontal: spacing.md,
-                                paddingVertical: spacing.xs,
-                              },
-                            ]}
-                          >
-                            <View style={styles.dateRowLeft}>
-                              <MaterialCommunityIcons
-                                name="calendar-month"
-                                size={20}
-                                color={colors.primary}
-                                style={{ marginRight: spacing.sm }}
-                                accessibilityElementsHidden
-                                importantForAccessibility="no"
-                              />
-                              <AppText variant="body" bold style={styles.dateValueText}>
-                                {formatted}
-                              </AppText>
-                            </View>
+                          <AppText variant="body" bold style={styles.dateValueText}>
+                            {formatted}
+                          </AppText>
+                        </Pressable>
 
-                            <AppText variant="caption" color="primary" bold>
-                              Change
-                            </AppText>
-                          </TouchableOpacity>
-                        )}
+                        <input
+                          ref={field.key === 'from' ? webFromInputRef : webToInputRef}
+                          type="date"
+                          max={today()}
+                          value={isoValue}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            try {
+                              if (typeof e.currentTarget.showPicker === 'function') {
+                                e.currentTarget.showPicker();
+                              }
+                            } catch {
+                              // Allow direct inline typing/calendar interaction
+                            }
+                          }}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (!val) return;
+                            if (isValidISODate(val)) {
+                              updateField(field.key, val);
+                            } else {
+                              setError('Please enter a valid calendar date.');
+                            }
+                          }}
+                          aria-label={`Select ${field.label} date`}
+                          style={{
+                            border: `1px solid ${colors.border}`,
+                            borderRadius: radius.sm,
+                            backgroundColor: colors.surface,
+                            color: colors.primary,
+                            colorScheme: isDark ? 'dark' : 'light',
+                            fontFamily: 'inherit',
+                            fontSize: 13,
+                            fontWeight: '600',
+                            padding: '6px 10px',
+                            minHeight: 36,
+                            cursor: 'pointer',
+                          }}
+                        />
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        activeOpacity={0.75}
+                        onPress={() => {
+                          setActiveField(isFocused ? null : field.key);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${field.label} date, currently ${formatted}. Tap to change.`}
+                        style={[
+                          styles.dateRow,
+                          {
+                            minHeight: touchTarget.min,
+                            backgroundColor: colors.surfaceAlt,
+                            borderColor: error
+                              ? colors.error
+                              : isFocused
+                                ? colors.primary
+                                : colors.border,
+                            borderRadius: radius.sm,
+                            paddingHorizontal: spacing.md,
+                            paddingVertical: spacing.xs,
+                          },
+                        ]}
+                      >
+                        <View style={styles.dateRowLeft}>
+                          <MaterialCommunityIcons
+                            name="calendar-month"
+                            size={20}
+                            color={colors.primary}
+                            style={{ marginRight: spacing.sm }}
+                            accessibilityElementsHidden
+                            importantForAccessibility="no"
+                          />
+                          <AppText variant="body" bold style={styles.dateValueText}>
+                            {formatted}
+                          </AppText>
+                        </View>
+
+                        <AppText variant="caption" color="primary" bold>
+                          Change
+                        </AppText>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 );
               })}
 
-            {/* ── iOS Inline Spinner Picker ── */}
             {Platform.OS === 'ios' && activeField && (
               <View
                 style={[
@@ -376,7 +372,6 @@ export default function DateRangeModal({
               </View>
             )}
 
-            {/* ── Android Native Picker Dialog ── */}
             {Platform.OS === 'android' && activeField && (
               <DateTimePicker
                 value={parseISODate(activeValue)}
@@ -392,7 +387,6 @@ export default function DateRangeModal({
               />
             )}
 
-            {/* ── Validation Message ── */}
             {error && (
               <View
                 style={[
@@ -421,7 +415,6 @@ export default function DateRangeModal({
               </View>
             )}
 
-            {/* ── Action Buttons ── */}
             <View style={[styles.actionsRow, { gap: spacing.sm }]}>
               <AppButton
                 label="Cancel"

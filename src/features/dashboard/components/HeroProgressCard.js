@@ -62,171 +62,168 @@ export default function HeroProgressCard({
     <AppCard
       style={{ marginBottom: spacing.lg }}
     >
-      {/* ── Card Header ── */}
-          <View style={[styles.headerRow, { gap: spacing.sm, marginBottom: spacing.md }]}>
-            <AppText variant="heading" bold style={styles.headerTitle}>
-              Today's Progress
-            </AppText>
-            <View
-              accessible
-              accessibilityLabel={
-                hasEntriesToday
-                  ? `${overallPercent} percent of daily goals completed`
-                  : 'No entries logged yet today'
-              }
-              style={[
-                styles.percentBadge,
-                {
-                  backgroundColor: badgeBg,
-                  borderRadius: radius.pill,
-                  paddingHorizontal: spacing.sm + spacing.xs,
-                  paddingVertical: spacing.xs,
-                },
-              ]}
-            >
-              <AppText
-                variant="caption"
-                bold
-                style={{ color: badgeColor }}
-              >
-                {hasEntriesToday ? `${overallPercent}%` : 'Start fresh'}
-              </AppText>
-            </View>
-          </View>
+      <View style={[styles.headerRow, { gap: spacing.sm, marginBottom: spacing.md }]}>
+        <AppText variant="heading" bold style={styles.headerTitle}>
+          Today's Progress
+        </AppText>
+        <View
+          accessible
+          accessibilityLabel={
+            hasEntriesToday
+              ? `${overallPercent} percent of daily goals completed`
+              : 'No entries logged yet today'
+          }
+          style={[
+            styles.percentBadge,
+            {
+              backgroundColor: badgeBg,
+              borderRadius: radius.pill,
+              paddingHorizontal: spacing.sm + spacing.xs,
+              paddingVertical: spacing.xs,
+            },
+          ]}
+        >
+          <AppText
+            variant="caption"
+            bold
+            style={{ color: badgeColor }}
+          >
+            {hasEntriesToday ? `${overallPercent}%` : 'Start fresh'}
+          </AppText>
+        </View>
+      </View>
 
-          {/* ── Three Goal Progress Rings ── */}
-            <View
-              style={[
-                styles.ringsRow,
-                { paddingVertical: spacing.xs, marginBottom: spacing.md },
-              ]}
-            >
-              {metrics.map((item) => (
-                  <View key={item.key} style={[styles.ringCol, { paddingHorizontal: spacing.xs / 2 }]}>
-                    <ProgressRing
-                      metricKey={item.key}
-                      value={item.todayValue}
-                      goal={item.goal}
-                      size={ringSize}
-                      strokeWidth={strokeWidth}
-                    />
-                    <View style={[styles.labelRow, { marginTop: spacing.xs + 2 }]}>
-                        <AppText variant="caption" bold color="text" numberOfLines={1}>
-                          {item.label}
-                        </AppText>
-                        {item.goalMet && (
-                          <MaterialCommunityIcons
-                            name="check-circle"
-                            size={13}
-                            color={colors.success}
-                            style={{ marginLeft: spacing.xs }}
-                            accessibilityElementsHidden
-                            importantForAccessibility="no"
-                          />
-                        )}
-                    </View>
-                    <AppText
-                      variant="caption"
-                      color="textMuted"
-                      numberOfLines={1}
-                      style={{ textAlign: 'center' }}
-                    >
-                      of {formatNumber(item.goal)}
-                    </AppText>
-                  </View>
-        ))}
-                </View>
-
-      {/* ── Dynamic Encouraging Message Banner ── */ }
-                < View
-        style = {
-                  [
-                  styles.encouragementBox,
-                  {
-                    backgroundColor: badgeBg,
-                    borderRadius: radius.button,
-                    padding: spacing.md,
-                  },
+      <View
+        style={[
+          styles.ringsRow,
+          { paddingVertical: spacing.xs, marginBottom: spacing.md },
         ]}
       >
-                <View
-                  style={styles.encouragementRow}
-                  accessible
-                  accessibilityLabel={`${encouragement.message} ${encouragement.subtext}`}
-                >
-                  <MaterialCommunityIcons
-                    name={encouragement.iconName}
-                    size={22}
-                    color={badgeColor}
-                    style={{ marginRight: spacing.sm, marginTop: 2 }}
-                    accessibilityElementsHidden
-                    importantForAccessibility="no"
-                  />
-                  <View style={styles.encouragementCopy}>
-                    <AppText variant="body" bold>
-                      {encouragement.message}
-                    </AppText>
-                    <AppText
-                      variant="caption"
-                      color="textMuted"
-                      style={{ marginTop: 2 }}
-                    >
-                      {encouragement.subtext}
-                    </AppText>
-                  </View>
-                </View>
+        {metrics.map((item) => (
+          <View key={item.key} style={[styles.ringCol, { paddingHorizontal: spacing.xs / 2 }]}>
+            <ProgressRing
+              metricKey={item.key}
+              value={item.todayValue}
+              goal={item.goal}
+              size={ringSize}
+              strokeWidth={strokeWidth}
+            />
+            <View style={[styles.labelRow, { marginTop: spacing.xs + 2 }]}>
+              <AppText variant="caption" bold color="text" numberOfLines={1}>
+                {item.label}
+              </AppText>
+              {item.goalMet && (
+                <MaterialCommunityIcons
+                  name="check-circle"
+                  size={13}
+                  color={colors.success}
+                  style={{ marginLeft: spacing.xs }}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+              )}
+            </View>
+            <AppText
+              variant="caption"
+              color="textMuted"
+              numberOfLines={1}
+              style={{ textAlign: 'center' }}
+            >
+              of {formatNumber(item.goal)}
+            </AppText>
+          </View>
+        ))}
+      </View>
 
-                {!hasEntriesToday && onLogPress && (
-                  <AppButton
-                    label="Log first entry"
-                    variant="secondary"
-                    iconName="plus"
-                    onPress={onLogPress}
-                    accessibilityLabel="Log your first health entry for today"
-                    style={{ marginTop: spacing.sm }}
-                  />
-                )}
-              </View>
-            </AppCard>
-            );
+                <View
+        style={
+          [
+            styles.encouragementBox,
+            {
+              backgroundColor: badgeBg,
+              borderRadius: radius.button,
+              padding: spacing.md,
+            },
+          ]}
+      >
+        <View
+          style={styles.encouragementRow}
+          accessible
+          accessibilityLabel={`${encouragement.message} ${encouragement.subtext}`}
+        >
+          <MaterialCommunityIcons
+            name={encouragement.iconName}
+            size={22}
+            color={badgeColor}
+            style={{ marginRight: spacing.sm, marginTop: 2 }}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
+          <View style={styles.encouragementCopy}>
+            <AppText variant="body" bold>
+              {encouragement.message}
+            </AppText>
+            <AppText
+              variant="caption"
+              color="textMuted"
+              style={{ marginTop: 2 }}
+            >
+              {encouragement.subtext}
+            </AppText>
+          </View>
+        </View>
+
+        {!hasEntriesToday && onLogPress && (
+          <AppButton
+            label="Log first entry"
+            variant="secondary"
+            iconName="plus"
+            onPress={onLogPress}
+            accessibilityLabel="Log your first health entry for today"
+            style={{ marginTop: spacing.sm }}
+          />
+        )}
+      </View>
+    </AppCard>
+  );
 }
 
-            const styles = StyleSheet.create({
-              headerRow: {
-              flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-            headerTitle: {
-              flexShrink: 1,
+  headerTitle: {
+    flexShrink: 1,
   },
-            percentBadge: {
-              alignItems: 'center',
-            justifyContent: 'center',
+  percentBadge: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-            ringsRow: {
-              flexDirection: 'row',
-            justifyContent: 'space-around',
-            alignItems: 'flex-start',
+  ringsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
   },
-            ringCol: {
-              flex: 1,
-            alignItems: 'center',
+  ringCol: {
+    flex: 1,
+    alignItems: 'center',
   },
-            labelRow: {
-              flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-            encouragementBox: {
-              width: '100%',
+  encouragementBox: {
+    width: '100%',
   },
-            encouragementRow: {
-              flexDirection: 'row',
-            alignItems: 'flex-start',
+  encouragementRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
-            encouragementCopy: {
-              flex: 1,
+  encouragementCopy: {
+    flex: 1,
   },
 });

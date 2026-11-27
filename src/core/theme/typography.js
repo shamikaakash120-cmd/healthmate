@@ -38,7 +38,6 @@ export const TYPOGRAPHY = {
     fontWeight: '500',
     letterSpacing: 0.4,
   },
-  // Large glanceable number for metric summaries and progress rings
   metricNumber: {
     fontSize: 28,
     lineHeight: 34,

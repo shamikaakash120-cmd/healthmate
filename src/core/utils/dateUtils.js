@@ -1,27 +1,14 @@
 /**
  * @layer Core (Utils)
- * @responsibility Date manipulation helpers using local time only.
+ * @responsibility Calendar date helpers using local time only.
  *
- * TIMEZONE SAFETY RULES applied throughout this file:
- *   - All Date construction from ISO strings uses the local-time trick:
- *     split YYYY-MM-DD and pass parts to `new Date(y, m-1, d)` so the
- *     host timezone is never bypassed by UTC parsing.
- *   - `new Date()` is used for "now" — always local.
- *   - No `.toISOString()` is used (it converts to UTC and shifts the date).
+ * Uses split YYYY-MM-DD local constructors and avoids `.toISOString()` so UTC conversion
+ * never shifts midnight dates by one calendar day.
  */
 
-// ─── Formatting helpers (private) ────────────────────────────────────────────
-
-/**
- * Left-pads a number to two digits.
- * @param {number} n
- * @returns {string}
- */
 function pad2(n) {
   return String(n).padStart(2, '0');
 }
-
-// ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Converts a Date object to a YYYY-MM-DD string using local time.
@@ -145,7 +132,6 @@ export function formatRelativeDay(iso) {
   const todayStr = today();
   if (iso === todayStr) return 'Today';
 
-  // Calculate yesterday in local time
   const yest = new Date();
   yest.setDate(yest.getDate() - 1);
   if (iso === toISODate(yest)) return 'Yesterday';

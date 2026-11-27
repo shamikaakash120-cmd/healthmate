@@ -21,7 +21,6 @@ export default function RootLayout() {
   const [isDbReady, setIsDbReady] = useState(false);
   const [dbError, setDbError] = useState(null);
 
-  // Initializes the SQLite database, seeds initial data if empty, and loads persisted settings.
   async function setup() {
     try {
       setDbError(null);
@@ -38,7 +37,6 @@ export default function RootLayout() {
     setup();
   }, []);
 
-  // While database migrations & seeding run, present a calming loading state
   if (!isDbReady) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -67,10 +65,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
         }}
       >
-        {/* Main bottom tabs group */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-
-        {/* Modal form for adding or editing health records */}
         <Stack.Screen
           name="record-form"
           options={{
@@ -80,7 +75,6 @@ export default function RootLayout() {
         />
       </Stack>
 
-      {/* Global snackbar / toast notifications */}
       <Toast />
     </View>
   );

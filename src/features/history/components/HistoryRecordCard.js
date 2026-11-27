@@ -3,9 +3,9 @@
  * @responsibility Renders a single health record entry card with relative/formatted date heading,
  *                three compact color-coded metric rows, and accessible 48dp Edit/Delete actions.
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppCard, AppText, PressableScale } from '../../../core/components';
 import { METRICS, METRIC_KEYS, useTheme } from '../../../core/theme';
 import { formatDisplayDate, formatRelativeDay } from '../../../core/utils/dateUtils';
@@ -31,7 +31,6 @@ export default function HistoryRecordCard({ record, onEdit, onDelete }) {
 
   return (
     <AppCard style={{ marginBottom: spacing.md }}>
-      {/* ── Card Header: Date Heading & 48dp Action Buttons ── */}
       <View
         style={[
           styles.headerRow,
@@ -60,29 +59,29 @@ export default function HistoryRecordCard({ record, onEdit, onDelete }) {
         </View>
 
         <View style={[styles.actionsRow, { gap: spacing.xs }]}>
-            <PressableScale
-              onPress={() => onEdit(record)}
-              scaleTo={0.93}
-              duration={150}
-              accessibilityRole="button"
-              accessibilityLabel={`Edit entry from ${formattedDate}`}
-              style={[
-                styles.actionButton,
-                {
-                  minWidth: touchTarget.min,
-                  minHeight: touchTarget.min,
-                  backgroundColor: colors.surfaceAlt,
-                  borderRadius: radius.button,
-                },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={20}
-                color={colors.primary}
-                accessibilityElementsHidden
-                importantForAccessibility="no"
-              />
+          <PressableScale
+            onPress={() => onEdit(record)}
+            scaleTo={0.93}
+            duration={150}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit entry from ${formattedDate}`}
+            style={[
+              styles.actionButton,
+              {
+                minWidth: touchTarget.min,
+                minHeight: touchTarget.min,
+                backgroundColor: colors.surfaceAlt,
+                borderRadius: radius.button,
+              },
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="pencil-outline"
+              size={20}
+              color={colors.primary}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           </PressableScale>
 
           <PressableScale
@@ -108,71 +107,70 @@ export default function HistoryRecordCard({ record, onEdit, onDelete }) {
               accessibilityElementsHidden
               importantForAccessibility="no"
             />
-        </PressableScale>
-      </View>
-    </View>
-
-      {/* ── Three Compact Metric Rows ── */ }
-  <View style={styles.metricsList}>
-    {METRIC_KEYS.map((key, index) => {
-      const config = METRICS[key];
-      const metricColor = colors[config.colorKey];
-      const metricTint = colors[config.tintKey];
-      const rawValue = record[key] ?? 0;
-      const formattedValue = formatNumber(rawValue);
-
-      return (
-        <View
-          key={key}
-          accessible
-          accessibilityLabel={`${config.label}: ${formattedValue} ${config.unit}`}
-          style={[
-            styles.metricRow,
-            { gap: spacing.sm },
-            index < METRIC_KEYS.length - 1 && { marginBottom: spacing.xs + 2 },
-          ]}
-        >
-          <View style={styles.metricLeft}>
-            <View
-              style={[
-                styles.metricIconBadge,
-                {
-                  width: METRIC_BADGE_SIZE,
-                  height: METRIC_BADGE_SIZE,
-                  backgroundColor: metricTint,
-                  borderRadius: radius.pill,
-                  marginRight: spacing.sm,
-                },
-              ]}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            >
-              <MaterialCommunityIcons
-                name={config.icon}
-                size={16}
-                color={metricColor}
-              />
-            </View>
-            <AppText variant="body" color="textMuted">
-              {config.label}
-            </AppText>
-          </View>
-
-          <View style={styles.metricRight}>
-            <AppText variant="body" bold style={{ color: metricColor }}>
-              {formattedValue}
-            </AppText>
-            <AppText
-              variant="caption"
-              style={{ color: metricColor, marginLeft: spacing.xs }}
-            >
-              {config.unit}
-            </AppText>
-          </View>
+          </PressableScale>
         </View>
-      );
-    })}
-  </View>
+      </View>
+
+      <View style={styles.metricsList}>
+        {METRIC_KEYS.map((key, index) => {
+          const config = METRICS[key];
+          const metricColor = colors[config.colorKey];
+          const metricTint = colors[config.tintKey];
+          const rawValue = record[key] ?? 0;
+          const formattedValue = formatNumber(rawValue);
+
+          return (
+            <View
+              key={key}
+              accessible
+              accessibilityLabel={`${config.label}: ${formattedValue} ${config.unit}`}
+              style={[
+                styles.metricRow,
+                { gap: spacing.sm },
+                index < METRIC_KEYS.length - 1 && { marginBottom: spacing.xs + 2 },
+              ]}
+            >
+              <View style={styles.metricLeft}>
+                <View
+                  style={[
+                    styles.metricIconBadge,
+                    {
+                      width: METRIC_BADGE_SIZE,
+                      height: METRIC_BADGE_SIZE,
+                      backgroundColor: metricTint,
+                      borderRadius: radius.pill,
+                      marginRight: spacing.sm,
+                    },
+                  ]}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                >
+                  <MaterialCommunityIcons
+                    name={config.icon}
+                    size={16}
+                    color={metricColor}
+                  />
+                </View>
+                <AppText variant="body" color="textMuted">
+                  {config.label}
+                </AppText>
+              </View>
+
+              <View style={styles.metricRight}>
+                <AppText variant="body" bold style={{ color: metricColor }}>
+                  {formattedValue}
+                </AppText>
+                <AppText
+                  variant="caption"
+                  style={{ color: metricColor, marginLeft: spacing.xs }}
+                >
+                  {config.unit}
+                </AppText>
+              </View>
+            </View>
+          );
+        })}
+      </View>
     </AppCard >
   );
 }

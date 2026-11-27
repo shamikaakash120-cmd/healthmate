@@ -1,20 +1,9 @@
 /**
  * @layer Model (Records)
  * @responsibility HealthRecord data shape, factory, and pure input validation.
- *
- * VALIDATION RULES (from master context)
- *   date     — required, valid YYYY-MM-DD, not in the future
- *   steps    — required, whole number, 0 – 100 000
- *   calories — required, whole number, 0 – 20 000
- *   water    — required, whole number, 0 – 20 000  (millilitres)
- *
- * Input values may arrive as numeric strings from text inputs; this module
- * converts and validates them safely. No UI code. No DB code.
  */
 
 import { isFutureDate, isValidISODate, today } from '../../../core/utils/dateUtils';
-
-// ─── Limits (single source of truth for validation) ───────────────────────────
 
 /** @type {Readonly<Record<string, number>>} */
 export const LIMITS = Object.freeze({
@@ -25,8 +14,6 @@ export const LIMITS = Object.freeze({
   waterMin: 0,
   waterMax: 20_000,
 });
-
-// ─── HealthRecord shape ───────────────────────────────────────────────────────
 
 /**
  * @typedef {object} HealthRecord
@@ -51,8 +38,6 @@ export const LIMITS = Object.freeze({
  * @property {ValidationErrors} errors - Per-field friendly error messages.
  */
 
-// ─── Factory ──────────────────────────────────────────────────────────────────
-
 /**
  * Creates a fresh HealthRecord with safe defaults for use in the Add form.
  *
@@ -73,8 +58,6 @@ export function createHealthRecord(overrides = {}) {
     ...overrides,
   };
 }
-
-// ─── Internal field validators ────────────────────────────────────────────────
 
 /**
  * Validates the date field.
@@ -107,34 +90,28 @@ function validateDate(rawDate) {
  * @returns {string|null} Error message, or null if valid.
  */
 function validateMetricField(rawValue, fieldLabel, unit, min, max) {
-  // ── Blank / empty check ──────────────────────────────────────────────────
   const strVal = String(rawValue ?? '').trim();
   if (strVal === '') {
     return `${fieldLabel} is required. Please enter a value.`;
   }
 
-  // ── Numeric check ────────────────────────────────────────────────────────
-  // Reject anything that is not a pure integer string (no decimals, no letters)
+  // Integer-only pattern rejects decimals, signs, and non-numeric text upfront
   if (!/^\d+$/.test(strVal)) {
     return `${fieldLabel} must be a whole number (no decimals or letters). You entered "${strVal}".`;
   }
 
   const num = Number(strVal);
 
-  // ── Negative check ───────────────────────────────────────────────────────
   if (num < min) {
     return `${fieldLabel} cannot be negative. Please enter a value of at least ${min} ${unit}.`;
   }
 
-  // ── Maximum check ────────────────────────────────────────────────────────
   if (num > max) {
     return `${fieldLabel} seems too high. The maximum allowed is ${max.toLocaleString()} ${unit}. Please double-check your entry.`;
   }
 
   return null;
 }
-
-// ─── Public validator ─────────────────────────────────────────────────────────
 
 /**
  * Validates all fields of a health record input object.
@@ -171,8 +148,6 @@ export function validateRecord(input) {
   const valid = Object.values(errors).every((e) => e === null);
   return { valid, errors };
 }
-
-// ─── Safe parser ─────────────────────────────────────────────────────────────
 
 /**
  * Converts a validated raw input object to a typed HealthRecord,

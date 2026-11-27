@@ -7,7 +7,6 @@
  * Standard elevation tokens designed for soft, natural lighting.
  */
 export const SHADOWS = {
-  // Light mode soft card elevation
   soft: {
     shadowColor: '#1F2D3D',
     shadowOffset: { width: 0, height: 2 },
@@ -15,7 +14,6 @@ export const SHADOWS = {
     shadowRadius: 10,
     elevation: 2,
   },
-  // Dark mode soft card elevation
   softDark: {
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
@@ -23,7 +21,6 @@ export const SHADOWS = {
     shadowRadius: 8,
     elevation: 2,
   },
-  // Elevated overlay shadow (Snackbars, FABs, floating popovers)
   elevated: {
     shadowColor: '#1F2D3D',
     shadowOffset: { width: 0, height: 4 },

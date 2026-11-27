@@ -45,102 +45,100 @@ export default function ProgressRing({
   const [animatedRatio, setAnimatedRatio] = useState(0);
 
   useEffect(() => {
-      const listenerId = animatedProgress.addListener(({ value: nextValue }) => {
-        setAnimatedRatio(nextValue);
-      });
+    const listenerId = animatedProgress.addListener(({ value: nextValue }) => {
+      setAnimatedRatio(nextValue);
+    });
 
-      const animation = Animated.timing(animatedProgress, {
-        toValue: progress,
-        duration: 300,
-        useNativeDriver: false,
-  });
-  animation.start();
+    const animation = Animated.timing(animatedProgress, {
+      toValue: progress,
+      duration: 300,
+      useNativeDriver: false,
+    });
+    animation.start();
 
-  return () => {
-    animatedProgress.removeListener(listenerId);
-    animation.stop();
-  };
-}, [animatedProgress, progress]);
+    return () => {
+      animatedProgress.removeListener(listenerId);
+      animation.stop();
+    };
+  }, [animatedProgress, progress]);
 
-if (!config) return null;
+  if (!config) return null;
 
-const metricColor = colors[config.colorKey];
-const trackColor = colors[config.tintKey];
-const strokeDashoffset = circumference * (1 - animatedRatio);
+  const metricColor = colors[config.colorKey];
+  const trackColor = colors[config.tintKey];
+  const strokeDashoffset = circumference * (1 - animatedRatio);
 
-const displayValue =
-numericValue >= 1000 ? `${(numericValue / 1000).toFixed(1)}k` : String(numericValue);
+  const displayValue =
+    numericValue >= 1000 ? `${(numericValue / 1000).toFixed(1)}k` : String(numericValue);
 
-const a11yLabel =
-  accessibilityLabel ||
-`${config.label}: ${numericValue} of ${goal} ${config.unit}, ${Math.round(progress * 100)}% complete`;
+  const a11yLabel =
+    accessibilityLabel ||
+    `${config.label}: ${numericValue} of ${goal} ${config.unit}, ${Math.round(progress * 100)}% complete`;
 
-return (
-  <View
-    style={[styles.container, { width: size, height: size }]}
-    accessibilityLabel={a11yLabel}
-    accessibilityRole="progressbar"
-    accessibilityValue={{ min: 0, max: goal, now: numericValue }}
-  >
-    {/* Rotate container -90deg so arc begins at 12 o'clock without using SVG `origin` prop (avoids React 19 web `transform-origin` warning) */}
+  return (
     <View
-      style={[
-        StyleSheet.absoluteFill,
-        { transform: [{ rotate: '-90deg' }] },
-      ]}
+      style={[styles.container, { width: size, height: size }]}
+      accessibilityLabel={a11yLabel}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: goal, now: numericValue }}
     >
-      <Svg width={size} height={size}>
-        {/* Track ring */}
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={trackColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        {/* Progress ring */}
-          <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={metricColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </Svg>
-    </View>
-
-    {showCentreText && (
+      {/* Rotate container -90deg so arc begins at 12 o'clock without using SVG `origin` prop (avoids React 19 web `transform-origin` warning) */}
       <View
         style={[
-          styles.centreText,
-          { maxWidth: Math.max(0, size - strokeWidth * 2 - 8) },
+          StyleSheet.absoluteFill,
+          { transform: [{ rotate: '-90deg' }] },
         ]}
-        pointerEvents="none"
       >
-        <AppText
-          variant={size >= 100 ? 'title' : 'heading'}
-          bold
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={{
-            color: metricColor,
-            lineHeight: size >= 100 ? 26 : 22,
-          }}
-        >
-          {displayValue}
-        </AppText>
-        <AppText variant="caption" color="textMuted" numberOfLines={1}>
-          {config.unit}
-        </AppText>
+        <Svg width={size} height={size}>
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={trackColor}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+        <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={metricColor}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+          />
+        </Svg>
       </View>
-    )}
-  </View>
-);
+
+      {showCentreText && (
+        <View
+          style={[
+            styles.centreText,
+            { maxWidth: Math.max(0, size - strokeWidth * 2 - 8) },
+          ]}
+          pointerEvents="none"
+        >
+          <AppText
+            variant={size >= 100 ? 'title' : 'heading'}
+            bold
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            style={{
+              color: metricColor,
+              lineHeight: size >= 100 ? 26 : 22,
+            }}
+          >
+            {displayValue}
+          </AppText>
+          <AppText variant="caption" color="textMuted" numberOfLines={1}>
+            {config.unit}
+          </AppText>
+        </View>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

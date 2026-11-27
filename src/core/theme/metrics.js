@@ -10,10 +10,10 @@ export const METRICS = {
   steps: {
     key: 'steps',
     label: 'Steps',
-    icon: 'walk',           // MaterialCommunityIcons icon name
+    icon: 'walk',
     unit: 'steps',
-    colorKey: 'steps',      // Refers to colors.steps
-    tintKey: 'stepsTint',   // Refers to colors.stepsTint
+    colorKey: 'steps',
+    tintKey: 'stepsTint',
     defaultGoal: 10000,
     maxLimit: 100000,
     stepSize: 500,
@@ -21,10 +21,10 @@ export const METRICS = {
   calories: {
     key: 'calories',
     label: 'Calories',
-    icon: 'fire',           // MaterialCommunityIcons icon name
+    icon: 'fire',
     unit: 'kcal',
-    colorKey: 'calories',   // Refers to colors.calories
-    tintKey: 'caloriesTint',// Refers to colors.caloriesTint
+    colorKey: 'calories',
+    tintKey: 'caloriesTint',
     defaultGoal: 500,
     maxLimit: 20000,
     stepSize: 50,
@@ -32,10 +32,10 @@ export const METRICS = {
   water: {
     key: 'water',
     label: 'Water',
-    icon: 'water',          // MaterialCommunityIcons icon name
+    icon: 'water',
     unit: 'ml',
-    colorKey: 'water',      // Refers to colors.water
-    tintKey: 'waterTint',   // Refers to colors.waterTint
+    colorKey: 'water',
+    tintKey: 'waterTint',
     defaultGoal: 2000,
     maxLimit: 20000,
     stepSize: 250,

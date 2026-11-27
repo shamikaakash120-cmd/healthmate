@@ -3,9 +3,9 @@
  * @responsibility Global Snackbar/Toast provider with smooth 220ms fade/slide motion,
  *                success and error tokens, auto-dismiss, and imperative Zustand store API.
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Animated, Easing, Platform, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { create } from 'zustand';
 import { useTheme } from '../theme';
 import AppText from './AppText';
@@ -21,7 +21,7 @@ const EXIT_DURATION_MS = 200;
 export const useToastStore = create((set) => ({
   visible: false,
   message: '',
-  type: 'success', // 'success' | 'error'
+  type: 'success',
 
   /**
    * Displays a toast notification.
@@ -90,13 +90,13 @@ export function Toast() {
   }, [hideToast, opacity, translateY]);
 
   useEffect(() => {
-      if (!visible) return undefined;
+    if (!visible) return undefined;
 
     if (dismissTimer.current) clearTimeout(dismissTimer.current);
     activeAnimation.current?.stop();
 
-  translateY.setValue(32);
-  opacity.setValue(0);
+    translateY.setValue(32);
+    opacity.setValue(0);
 
     const enterAnim = Animated.parallel([
       Animated.timing(translateY, {
@@ -112,64 +112,64 @@ export function Toast() {
         useNativeDriver: USE_NATIVE_DRIVER,
       }),
     ]);
-  activeAnimation.current = enterAnim;
-  enterAnim.start();
+    activeAnimation.current = enterAnim;
+    enterAnim.start();
 
-  dismissTimer.current = setTimeout(dismiss, AUTO_DISMISS_MS);
+    dismissTimer.current = setTimeout(dismiss, AUTO_DISMISS_MS);
 
-  return () => {
-    if (dismissTimer.current) clearTimeout(dismissTimer.current);
-    activeAnimation.current?.stop();
-  };
-}, [visible, message, dismiss, opacity, translateY]);
+    return () => {
+      if (dismissTimer.current) clearTimeout(dismissTimer.current);
+      activeAnimation.current?.stop();
+    };
+  }, [visible, message, dismiss, opacity, translateY]);
 
-if (!visible) return null;
+  if (!visible) return null;
 
-const isSuccess = type === 'success';
-const bgColor = isSuccess ? colors.successBg : colors.errorBg;
-const fgColor = isSuccess ? colors.success : colors.error;
-const iconName = isSuccess ? 'check-circle-outline' : 'alert-circle-outline';
-const a11yLabel = `${isSuccess ? 'Success' : 'Error'}: ${message}`;
+  const isSuccess = type === 'success';
+  const bgColor = isSuccess ? colors.successBg : colors.errorBg;
+  const fgColor = isSuccess ? colors.success : colors.error;
+  const iconName = isSuccess ? 'check-circle-outline' : 'alert-circle-outline';
+  const a11yLabel = `${isSuccess ? 'Success' : 'Error'}: ${message}`;
 
-return (
-  <Animated.View
-    pointerEvents="none"
-    style={[
-      styles.toast,
-      elevatedShadow,
-      {
-        backgroundColor: bgColor,
-        borderColor: colors.border,
-        borderLeftColor: fgColor,
-        borderRadius: radius.sm,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm + 2,
-        marginHorizontal: spacing.lg,
-        bottom: spacing.xxl + spacing.md,
-        transform: [{ translateY }],
-        opacity,
-      },
-    ]}
-    accessibilityLiveRegion="polite"
-    accessibilityLabel={a11yLabel}
-    accessibilityRole="alert"
-  >
-    <MaterialCommunityIcons
-      name={iconName}
-      size={20}
-      color={fgColor}
-      style={{ marginRight: spacing.sm }}
-      accessibilityElementsHidden
-      importantForAccessibility="no"
-    />
-    <AppText
-      variant="body"
-      style={[styles.messageText, { color: fgColor }]}
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        styles.toast,
+        elevatedShadow,
+        {
+          backgroundColor: bgColor,
+          borderColor: colors.border,
+          borderLeftColor: fgColor,
+          borderRadius: radius.sm,
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm + 2,
+          marginHorizontal: spacing.lg,
+          bottom: spacing.xxl + spacing.md,
+          transform: [{ translateY }],
+          opacity,
+        },
+      ]}
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={a11yLabel}
+      accessibilityRole="alert"
     >
-      {message}
-    </AppText>
-  </Animated.View>
-);
+      <MaterialCommunityIcons
+        name={iconName}
+        size={20}
+        color={fgColor}
+        style={{ marginRight: spacing.sm }}
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
+      <AppText
+        variant="body"
+        style={[styles.messageText, { color: fgColor }]}
+      >
+        {message}
+      </AppText>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({

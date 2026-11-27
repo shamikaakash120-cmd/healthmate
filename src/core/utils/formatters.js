@@ -4,8 +4,6 @@
  * Pure functions — no UI, no DB, no side-effects.
  */
 
-// ─── Number formatting ────────────────────────────────────────────────────────
-
 /**
  * Formats a number with locale-aware thousands separators.
  * Falls back gracefully if the value is not a finite number.
@@ -60,8 +58,6 @@ export function formatWithUnit(value, unit) {
   return `${formatNumber(value)} ${unit}`;
 }
 
-// ─── Time-of-day greeting ─────────────────────────────────────────────────────
-
 /**
  * Returns a friendly greeting appropriate for the current local time of day.
  *
@@ -88,8 +84,6 @@ export function greetingForTime(now = new Date()) {
   if (hour < 21) return 'Good evening';
   return 'Good night';
 }
-
-// ─── Progress helpers ─────────────────────────────────────────────────────────
 
 /**
  * Calculates the percentage completion of a metric toward its goal,

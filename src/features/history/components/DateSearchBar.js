@@ -74,7 +74,6 @@ export default function DateSearchBar({
 
   return (
     <View style={[styles.container, style]}>
-      {/* ── Search Bar-Style Row ── */}
       <TouchableOpacity
         activeOpacity={0.75}
         onPress={handleOpenPicker}
@@ -121,7 +120,6 @@ export default function DateSearchBar({
           importantForAccessibility="no"
         />
 
-        {/* Hidden Web date input triggered via showPicker() on row tap */}
         {Platform.OS === 'web' && (
           <input
             ref={webInputRef}
@@ -141,7 +139,6 @@ export default function DateSearchBar({
         )}
       </TouchableOpacity>
 
-      {/* ── Active Filter Chip ── */}
       {showChip && formattedSelected && (
         <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
           <View
@@ -194,7 +191,6 @@ export default function DateSearchBar({
         </View>
       )}
 
-      {/* ── Android Native Date Picker ── */}
       {Platform.OS === 'android' && showPicker && (
         <DateTimePicker
           value={parseISODate(searchDate || today())}
@@ -209,7 +205,6 @@ export default function DateSearchBar({
         />
       )}
 
-      {/* ── iOS Modal Spinner Date Picker ── */}
       {Platform.OS === 'ios' && (
         <Modal
           visible={showPicker}
@@ -217,117 +212,117 @@ export default function DateSearchBar({
           animationType="fade"
           onRequestClose={() => setShowPicker(false)}
         >
-            <View style={[styles.iosOverlay, { backgroundColor: colors.overlay }]} accessibilityViewIsModal>
-              <View
-                style={[
-                  styles.iosSheet,
-                  {
-                    backgroundColor: colors.surface,
-                    borderRadius: radius.card,
-                    padding: spacing.md,
-                    paddingBottom: spacing.xl,
-                  },
-                ]}
-              >
-                  <View style={[styles.iosHeader, { marginBottom: spacing.sm }]}>
-                    <TouchableOpacity
-                      onPress={() => setShowPicker(false)}
-                      accessibilityRole="button"
-                      accessibilityLabel="Cancel date filter"
-                      style={[styles.iosHeaderAction, { minWidth: touchTarget.min, minHeight: touchTarget.min }]}
-                    >
-                      <AppText variant="body" color="textMuted">
-                        Cancel
-                      </AppText>
-                    </TouchableOpacity>
-                    <AppText variant="body" bold>
-                      Filter by Date
-                    </AppText>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setShowPicker(false);
-                        onSelectDate(pendingDate);
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel="Apply selected date filter"
-                      style={[styles.iosHeaderAction, { minWidth: touchTarget.min, minHeight: touchTarget.min }]}
-                    >
-                      <AppText variant="body" color="primary" bold>
-                        Apply
-                      </AppText>
-                    </TouchableOpacity>
-                  </View>
-
-                  <DateTimePicker
-                    value={parseISODate(pendingDate)}
-                    mode="date"
-                    display="spinner"
-                    maximumDate={new Date()}
-                    onChange={(_event, selectedDate) => {
-                      if (selectedDate) {
-                        setPendingDate(toISODate(selectedDate));
-                      }
-                    }}
-                  />
-                </View>
+          <View style={[styles.iosOverlay, { backgroundColor: colors.overlay }]} accessibilityViewIsModal>
+            <View
+              style={[
+                styles.iosSheet,
+                {
+                  backgroundColor: colors.surface,
+                  borderRadius: radius.card,
+                  padding: spacing.md,
+                  paddingBottom: spacing.xl,
+                },
+              ]}
+            >
+              <View style={[styles.iosHeader, { marginBottom: spacing.sm }]}>
+                <TouchableOpacity
+                  onPress={() => setShowPicker(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel date filter"
+                  style={[styles.iosHeaderAction, { minWidth: touchTarget.min, minHeight: touchTarget.min }]}
+                >
+                  <AppText variant="body" color="textMuted">
+                    Cancel
+                  </AppText>
+                </TouchableOpacity>
+                <AppText variant="body" bold>
+                  Filter by Date
+                </AppText>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowPicker(false);
+                    onSelectDate(pendingDate);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Apply selected date filter"
+                  style={[styles.iosHeaderAction, { minWidth: touchTarget.min, minHeight: touchTarget.min }]}
+                >
+                  <AppText variant="body" color="primary" bold>
+                    Apply
+                  </AppText>
+                </TouchableOpacity>
               </View>
-            </Modal>
-      )}
+
+              <DateTimePicker
+                value={parseISODate(pendingDate)}
+                mode="date"
+                display="spinner"
+                maximumDate={new Date()}
+                onChange={(_event, selectedDate) => {
+                  if (selectedDate) {
+                    setPendingDate(toISODate(selectedDate));
+                  }
+                }}
+              />
+            </View>
           </View>
-          );
+        </Modal>
+      )}
+    </View>
+  );
 }
 
-          const styles = StyleSheet.create({
-            container: {
-            width: '100%',
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
   },
-          searchBar: {
-            flexDirection: 'row',
-          alignItems: 'center',
-          minHeight: 48,
-          borderWidth: 1,
-          position: 'relative',
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 48,
+    borderWidth: 1,
+    position: 'relative',
   },
-          placeholderText: {
-            flex: 1,
+  placeholderText: {
+    flex: 1,
   },
-          webHiddenInput: {
-            position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          opacity: 0,
-          pointerEvents: 'none',
+  webHiddenInput: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    opacity: 0,
+    pointerEvents: 'none',
   },
-          chipRow: {
-            flexDirection: 'row',
-          alignItems: 'center',
-          flexWrap: 'wrap',
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
   },
-          activeChip: {
-            flexDirection: 'row',
-          alignItems: 'center',
-          borderWidth: 1,
+  activeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
   },
-          clearButton: {
-          alignItems: 'center',
-          justifyContent: 'center',
+  clearButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-          iosOverlay: {
-            flex: 1,
-          justifyContent: 'flex-end',
+  iosOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
   },
-          iosSheet: {
-          width: '100%',
+  iosSheet: {
+    width: '100%',
   },
-          iosHeader: {
-            flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+  iosHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-          iosHeaderAction: {
-          justifyContent: 'center',
-          alignItems: 'center',
+  iosHeaderAction: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

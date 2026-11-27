@@ -1,29 +1,11 @@
 /**
  * @layer ViewModel (Records)
  * @responsibility Zustand store managing records state, validation, search/filtering, and repository orchestration.
- *
- * RULES APPLIED:
- *   - No SQL queries (repositories are the ONLY place for SQL).
- *   - No UI code (screens/components render UI).
- *   - Validates using Model layer (`validateRecord`) and converts safely using `toHealthRecord()`.
- *   - Guard against duplicate rapid submits (concurrent calls ignored while a save is in progress).
- *   - Automatically refreshes records and daily totals after mutations.
  */
-import { Platform } from 'react-native';
-import { create } from 'zustand';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { validateRecord, toHealthRecord } from '../model';
-import {
-  createRecord,
-  getAllRecords,
-  getRecordById,
-  getRecordsByDate,
-  getRecordsBetween,
-  updateRecord,
-  deleteRecord,
-  getTotalsForDate,
-} from '../repository';
+import { Platform } from 'react-native';
+import { create } from 'zustand';
 import { recordsToCsv } from '../../../core/utils/csv';
 import {
   getLastNDates,
@@ -31,6 +13,17 @@ import {
   isValidISODate,
   today,
 } from '../../../core/utils/dateUtils';
+import { toHealthRecord, validateRecord } from '../model';
+import {
+  createRecord,
+  deleteRecord,
+  getAllRecords,
+  getRecordById,
+  getRecordsBetween,
+  getRecordsByDate,
+  getTotalsForDate,
+  updateRecord,
+} from '../repository';
 
 /**
  * Supported History sort modes rendered in the sort menu.
@@ -94,7 +87,6 @@ const ZERO_TOTALS = Object.freeze({ steps: 0, calories: 0, water: 0 });
  * Zustand store hook for the health records feature.
  */
 export const useRecordsStore = create((set, get) => ({
-  // ─── State ──────────────────────────────────────────────────────────────────
   /** @type {Array<{ id: number, date: string, steps: number, calories: number, water: number }>} */
   records: [],
 
@@ -127,8 +119,6 @@ export const useRecordsStore = create((set, get) => ({
 
   /** @type {'idle'|'saving'|'success'|'error'} Status of the most recent save operation */
   lastSaveStatus: 'idle',
-
-  // ─── Actions ────────────────────────────────────────────────────────────────
 
   /**
    * Loads health records from SQLite based on current active filters.
@@ -168,7 +158,6 @@ export const useRecordsStore = create((set, get) => ({
    * @returns {Promise<{ success: boolean, errors: object|null, record?: object }>}
    */
   addRecord: async (input) => {
-    // Guard against duplicate rapid submits
     if (get().lastSaveStatus === 'saving') {
       return {
         success: false,
@@ -178,7 +167,6 @@ export const useRecordsStore = create((set, get) => ({
 
     set({ lastSaveStatus: 'saving', error: null });
 
-    // Validate with domain model
     const validation = validateRecord(input);
     if (!validation.valid) {
       set({ lastSaveStatus: 'error' });
@@ -186,15 +174,10 @@ export const useRecordsStore = create((set, get) => ({
     }
 
     try {
-      // Safe type conversion through model layer
       const domainRecord = toHealthRecord(input);
-
-      // Persist via repository
       const created = await createRecord(domainRecord);
 
       set({ lastSaveStatus: 'success' });
-
-      // Refresh records list and today's summary metrics
       await Promise.all([get().loadRecords(), get().loadTodayTotals()]);
 
       return { success: true, errors: null, record: created };
@@ -203,7 +186,7 @@ export const useRecordsStore = create((set, get) => ({
       set({ lastSaveStatus: 'error', error: errorMsg });
       return { success: false, errors: { form: errorMsg } };
     } finally {
-      // Reset save status back to idle after a brief tick
+      // Allow UI save status listeners to observe completion before returning to idle
       setTimeout(() => {
         if (get().lastSaveStatus === 'success' || get().lastSaveStatus === 'error') {
           set({ lastSaveStatus: 'idle' });
@@ -220,7 +203,6 @@ export const useRecordsStore = create((set, get) => ({
    * @returns {Promise<{ success: boolean, errors: object|null, record?: object }>}
    */
   editRecord: async (input) => {
-    // Guard against duplicate rapid submits
     if (get().lastSaveStatus === 'saving') {
       return {
         success: false,
@@ -237,7 +219,6 @@ export const useRecordsStore = create((set, get) => ({
 
     set({ lastSaveStatus: 'saving', error: null });
 
-    // Validate with domain model
     const validation = validateRecord(input);
     if (!validation.valid) {
       set({ lastSaveStatus: 'error' });
@@ -245,15 +226,10 @@ export const useRecordsStore = create((set, get) => ({
     }
 
     try {
-      // Safe type conversion through model layer
       const domainRecord = toHealthRecord(input, input.id);
-
-      // Persist update via repository
       const updated = await updateRecord(domainRecord);
 
       set({ lastSaveStatus: 'success' });
-
-      // Refresh records and totals
       await Promise.all([get().loadRecords(), get().loadTodayTotals()]);
 
       return { success: true, errors: null, record: updated };
@@ -449,8 +425,6 @@ export const useRecordsStore = create((set, get) => ({
     return await getRecordById(numericId);
   },
 }));
-
-// ─── Selectors ────────────────────────────────────────────────────────────────
 
 /**
  * Compares two records chronologically (newest or oldest first), breaking ties by ID.

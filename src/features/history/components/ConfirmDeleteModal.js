@@ -45,7 +45,6 @@ export default function ConfirmDeleteModal({
         ]}
         accessibilityViewIsModal
       >
-        {/* Backdrop tap to cancel */}
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={() => {
@@ -61,54 +60,54 @@ export default function ConfirmDeleteModal({
             contentContainerStyle={styles.dialogScrollContent}
             showsVerticalScrollIndicator={false}
           >
-          <View
-            style={[
-              styles.iconWell,
-              {
-                backgroundColor: colors.errorBg,
-                borderRadius: radius.pill,
-                marginBottom: spacing.md,
-              },
-            ]}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          >
-            <MaterialCommunityIcons
-              name="trash-can-outline"
-              size={28}
-              color={colors.error}
-            />
-          </View>
+            <View
+              style={[
+                styles.iconWell,
+                {
+                  backgroundColor: colors.errorBg,
+                  borderRadius: radius.pill,
+                  marginBottom: spacing.md,
+                },
+              ]}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            >
+              <MaterialCommunityIcons
+                name="trash-can-outline"
+                size={28}
+                color={colors.error}
+              />
+            </View>
 
-          <AppText
-            variant="heading"
-            bold
-            align="center"
-            accessibilityRole="header"
-            style={{ marginBottom: spacing.xs }}
-          >
-            Delete Entry
-          </AppText>
-
-          <AppText
-            variant="body"
-            color="textMuted"
-            align="center"
-            style={{ marginBottom: entryDateLabel ? spacing.xs : spacing.lg }}
-          >
-            Delete this entry? This cannot be undone.
-          </AppText>
-
-          {entryDateLabel && (
             <AppText
-              variant="caption"
+              variant="heading"
+              bold
+              align="center"
+              accessibilityRole="header"
+              style={{ marginBottom: spacing.xs }}
+            >
+              Delete Entry
+            </AppText>
+
+            <AppText
+              variant="body"
               color="textMuted"
               align="center"
-              style={{ marginBottom: spacing.lg }}
+              style={{ marginBottom: entryDateLabel ? spacing.xs : spacing.lg }}
             >
-              {entryDateLabel}
+              Delete this entry? This cannot be undone.
             </AppText>
-          )}
+
+            {entryDateLabel && (
+              <AppText
+                variant="caption"
+                color="textMuted"
+                align="center"
+                style={{ marginBottom: spacing.lg }}
+              >
+                {entryDateLabel}
+              </AppText>
+            )}
 
             <View style={[styles.buttonsRow, { gap: spacing.sm }]}>
               <AppButton

@@ -3,6 +3,7 @@
  * @responsibility Uncluttered toolbar grouping single-date search, From/To date range button,
  *                sort menu button, CSV export button, and the dismissible active-filter chip.
  */
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
   ActivityIndicator,
@@ -10,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppText, PressableScale } from '../../../core/components';
 import { useTheme } from '../../../core/theme';
 import { formatDisplayDate } from '../../../core/utils/dateUtils';
@@ -64,7 +64,6 @@ export default function HistoryToolbar({
 
   return (
     <View style={styles.container}>
-      {/* ── Single-Date Search Row ── */}
       <DateSearchBar
         searchDate={searchDate}
         onSelectDate={onSelectDate}
@@ -72,50 +71,49 @@ export default function HistoryToolbar({
         showChip={false}
       />
 
-          {/* ── Grouped Action Toolbar Row: Range · Sort · CSV (48dp touch targets) ── */}
       <View style={[styles.toolbarRow, { gap: spacing.xs + 2, marginTop: spacing.sm }]}>
-          <PressableScale
-            scaleTo={0.97}
-            duration={150}
-            onPress={onOpenRange}
-            containerStyle={styles.toolFlex}
-            accessibilityRole="button"
-            accessibilityLabel={
-              hasRangeFilter
-                ? `Date range filter active: ${rangeStart} to ${rangeEnd}. Tap to edit.`
-                : 'Filter by date range'
-            }
+        <PressableScale
+          scaleTo={0.97}
+          duration={150}
+          onPress={onOpenRange}
+          containerStyle={styles.toolFlex}
+          accessibilityRole="button"
+          accessibilityLabel={
+            hasRangeFilter
+              ? `Date range filter active: ${rangeStart} to ${rangeEnd}. Tap to edit.`
+              : 'Filter by date range'
+          }
+          style={[
+            styles.toolButton,
+            shadow,
+            {
+              minHeight: touchTarget.min,
+              backgroundColor: hasRangeFilter ? colors.surfaceAlt : colors.surface,
+              borderColor: hasRangeFilter ? colors.primary : colors.border,
+              borderRadius: radius.button,
+              paddingHorizontal: spacing.sm,
+            },
+          ]}
+        >
+          <MaterialCommunityIcons
+            name="calendar-range"
+            size={16}
+            color={hasRangeFilter ? colors.primary : colors.textMuted}
+            style={{ marginRight: spacing.xs }}
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
+          <AppText
+            variant="caption"
+            bold={hasRangeFilter}
+            numberOfLines={1}
             style={[
-              styles.toolButton,
-              shadow,
-              {
-                minHeight: touchTarget.min,
-                backgroundColor: hasRangeFilter ? colors.surfaceAlt : colors.surface,
-                borderColor: hasRangeFilter ? colors.primary : colors.border,
-                borderRadius: radius.button,
-                paddingHorizontal: spacing.sm,
-              },
+              styles.toolText,
+              { color: hasRangeFilter ? colors.primary : colors.text },
             ]}
           >
-            <MaterialCommunityIcons
-              name="calendar-range"
-              size={16}
-              color={hasRangeFilter ? colors.primary : colors.textMuted}
-              style={{ marginRight: spacing.xs }}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-            <AppText
-              variant="caption"
-              bold={hasRangeFilter}
-              numberOfLines={1}
-              style={[
-                styles.toolText,
-                { color: hasRangeFilter ? colors.primary : colors.text },
-              ]}
-            >
-              Date range
-            </AppText>
+            Date range
+          </AppText>
         </PressableScale>
 
         <PressableScale
@@ -156,109 +154,108 @@ export default function HistoryToolbar({
           >
             {activeSortOption.shortLabel}
           </AppText>
-      </PressableScale>
+        </PressableScale>
 
         <PressableScale
-        scaleTo={0.97}
-        duration={150}
-        onPress={onExportCsv}
-        disabled={isExporting}
-        containerStyle={styles.exportFlex}
-        accessibilityRole="button"
-        accessibilityState={{ busy: isExporting, disabled: isExporting }}
-        accessibilityLabel="Export currently shown records as CSV"
-        style={[
-          styles.toolButton,
-          shadow,
-          {
-            minHeight: touchTarget.min,
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-            borderRadius: radius.button,
-            paddingHorizontal: spacing.sm,
-            opacity: isExporting ? 0.6 : 1,
-          },
-        ]}
-      >
-        {isExporting ? (
-          <ActivityIndicator size="small" color={colors.primary} />
-        ) : (
-          <>
-            <MaterialCommunityIcons
-              name="export-variant"
-              size={16}
-              color={colors.primary}
-              style={{ marginRight: spacing.xs }}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-            <AppText
-              variant="caption"
-              bold
-              numberOfLines={1}
-              style={[styles.toolText, { color: colors.primary }]}
-            >
-              Export
-            </AppText>
-          </>
-        )}
-    </PressableScale>
-      </View >
-
-    {/* ── Active Filter Chip (Single Date OR Date Range) ── */ }
-  {
-    activeChipLabel && (
-      <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
-        <View
+          scaleTo={0.97}
+          duration={150}
+          onPress={onExportCsv}
+          disabled={isExporting}
+          containerStyle={styles.exportFlex}
+          accessibilityRole="button"
+          accessibilityState={{ busy: isExporting, disabled: isExporting }}
+          accessibilityLabel="Export currently shown records as CSV"
           style={[
-            styles.activeChip,
+            styles.toolButton,
+            shadow,
             {
               minHeight: touchTarget.min,
-              backgroundColor: colors.surfaceAlt,
-              borderColor: colors.primary,
-              borderRadius: radius.pill,
-              paddingLeft: spacing.md,
-              paddingRight: spacing.xs,
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              borderRadius: radius.button,
+              paddingHorizontal: spacing.sm,
+              opacity: isExporting ? 0.6 : 1,
             },
           ]}
         >
-          <MaterialCommunityIcons
-            name={hasRangeFilter ? 'calendar-range' : 'filter-variant'}
-            size={14}
-            color={colors.primary}
-            style={{ marginRight: spacing.xs }}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
-          <AppText
-            variant="caption"
-            bold
-            style={[styles.chipText, { color: colors.primary }]}
-            numberOfLines={1}
-          >
-            {activeChipLabel}
-          </AppText>
-          <TouchableOpacity
-            onPress={onClearFilter}
-            accessibilityRole="button"
-            accessibilityLabel={`Clear active filter: ${activeChipLabel}`}
-            style={[
-              styles.clearButton,
-              { minWidth: touchTarget.min, minHeight: touchTarget.min },
-            ]}
-          >
-            <MaterialCommunityIcons
-              name="close-circle"
-              size={18}
-              color={colors.primary}
-              accessibilityElementsHidden
-              importantForAccessibility="no"
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-  }
+          {isExporting ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <>
+              <MaterialCommunityIcons
+                name="export-variant"
+                size={16}
+                color={colors.primary}
+                style={{ marginRight: spacing.xs }}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+              <AppText
+                variant="caption"
+                bold
+                numberOfLines={1}
+                style={[styles.toolText, { color: colors.primary }]}
+              >
+                Export
+              </AppText>
+            </>
+          )}
+        </PressableScale>
+      </View >
+
+      {
+        activeChipLabel && (
+          <View style={[styles.chipRow, { marginTop: spacing.sm }]}>
+            <View
+              style={[
+                styles.activeChip,
+                {
+                  minHeight: touchTarget.min,
+                  backgroundColor: colors.surfaceAlt,
+                  borderColor: colors.primary,
+                  borderRadius: radius.pill,
+                  paddingLeft: spacing.md,
+                  paddingRight: spacing.xs,
+                },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={hasRangeFilter ? 'calendar-range' : 'filter-variant'}
+                size={14}
+                color={colors.primary}
+                style={{ marginRight: spacing.xs }}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+              <AppText
+                variant="caption"
+                bold
+                style={[styles.chipText, { color: colors.primary }]}
+                numberOfLines={1}
+              >
+                {activeChipLabel}
+              </AppText>
+              <TouchableOpacity
+                onPress={onClearFilter}
+                accessibilityRole="button"
+                accessibilityLabel={`Clear active filter: ${activeChipLabel}`}
+                style={[
+                  styles.clearButton,
+                  { minWidth: touchTarget.min, minHeight: touchTarget.min },
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name="close-circle"
+                  size={18}
+                  color={colors.primary}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )
+      }
     </View >
   );
 }
@@ -286,25 +283,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
   },
-    toolText: {
-      flexShrink: 1,
-    },
-    chipRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-    },
-    activeChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      borderWidth: 1,
-      maxWidth: '100%',
-    },
-    chipText: {
-      flexShrink: 1,
-    },
-    clearButton: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-  });
+  toolText: {
+    flexShrink: 1,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  activeChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    maxWidth: '100%',
+  },
+  chipText: {
+    flexShrink: 1,
+  },
+  clearButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

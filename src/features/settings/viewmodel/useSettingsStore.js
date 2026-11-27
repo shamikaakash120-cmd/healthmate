@@ -2,11 +2,6 @@
  * @layer ViewModel (Settings)
  * @responsibility Zustand store managing daily metric goals and theme mode preference,
  *                synced with SQLite via settingsRepository and global theme state.
- *
- * RULES APPLIED:
- *   - No raw SQL queries here; all persistence delegates to settingsRepository.
- *   - No UI code here.
- *   - Updates app-wide theme override immediately when themeMode loads or changes.
  */
 import { create } from 'zustand';
 import { seedDatabase } from '../../../core/database/seed';
@@ -34,7 +29,6 @@ let latestThemeRequestId = 0;
  * Zustand store hook managing persisted daily goals and app theme preference.
  */
 export const useSettingsStore = create((set, get) => ({
-  // ─── State ──────────────────────────────────────────────────────────────────
   /** @type {{ steps: number, calories: number, water: number }} */
   dailyGoals: { ...DEFAULT_GOALS },
 
@@ -55,8 +49,6 @@ export const useSettingsStore = create((set, get) => ({
 
   /** @type {string | null} */
   error: null,
-
-  // ─── Actions ────────────────────────────────────────────────────────────────
 
   /**
    * Loads all persisted settings from SQLite and applies theme + goals state.
